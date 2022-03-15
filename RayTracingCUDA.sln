@@ -5,6 +5,8 @@ VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Learning", "Learning\Learning.vcxproj", "{5E3DD031-573A-4DB9-87A0-7AE1A92F5D7C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LearningRayTracing", "LearningRayTracing\LearningRayTracing.vcxproj", "{8ADCF8AF-09DE-4DCE-8653-2FC90F3C1190}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,10 @@ Global
 		{5E3DD031-573A-4DB9-87A0-7AE1A92F5D7C}.Debug|x64.Build.0 = Debug|x64
 		{5E3DD031-573A-4DB9-87A0-7AE1A92F5D7C}.Release|x64.ActiveCfg = Release|x64
 		{5E3DD031-573A-4DB9-87A0-7AE1A92F5D7C}.Release|x64.Build.0 = Release|x64
+		{8ADCF8AF-09DE-4DCE-8653-2FC90F3C1190}.Debug|x64.ActiveCfg = Debug|x64
+		{8ADCF8AF-09DE-4DCE-8653-2FC90F3C1190}.Debug|x64.Build.0 = Debug|x64
+		{8ADCF8AF-09DE-4DCE-8653-2FC90F3C1190}.Release|x64.ActiveCfg = Release|x64
+		{8ADCF8AF-09DE-4DCE-8653-2FC90F3C1190}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
