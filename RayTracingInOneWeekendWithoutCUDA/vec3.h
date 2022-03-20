@@ -25,7 +25,7 @@ struct vec3 {
     {}
     constexpr vec3(val _x, val _y, val _z) :
         x{ _x },
-        y{ _y},
+        y{ _y },
         z{ _z }
     {}
 

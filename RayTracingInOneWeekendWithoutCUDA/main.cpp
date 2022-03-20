@@ -64,7 +64,7 @@ struct CameraSpecification {
 };
 
 
-void print_remaining_scanlines_with_info(ImageSpecification image, i32 remaining) {
+void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
     std::cerr << "\rImage " << image.height << "x" << image.width << " Scanlines remaining : " << remaining << ' ' << std::flush;
 }
 
@@ -95,7 +95,7 @@ auto main() -> i32 {
     file.open("output_filename.ppm");
     file << "P3\n" << image.width << ' ' << image.height << "\n255\n";
     for (i32 j = image.height - 1; j >= 0; j--) {
-        print_remaining_scanlines_with_info(image, j);
+        printRemainingScanlinesWithInfo(image, j);
         for (i32 i = 0; i < image.width; i++) {
             const f32 u = (f32)i / ((f32)image.width - 1.f);
             const f32 v = (f32)j / ((f32)image.height - 1.f);

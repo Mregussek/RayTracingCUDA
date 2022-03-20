@@ -12,7 +12,6 @@ struct Ray {
 	point3 origin{};
 	vector3 direction{};
 
-
 	constexpr Ray() = default;
 
 	constexpr Ray(point3 _origin, vector3 _direction) :
