@@ -28,8 +28,8 @@ struct CameraSpecification {
     f32 focalLength{ 1.f };
 
     point3 origin{ 0.f, 0.f, 0.f };
-    vec3<> horizontal{ 0.f, 0.f, 0.f };
-    vec3<> vertical{ 0.f, 0.f, 0.f };
+    vector3 horizontal{ 0.f, 0.f, 0.f };
+    vector3 vertical{ 0.f, 0.f, 0.f };
     point3 lowerLeftCorner{ 0.f, 0.f, 0.f };
 
     constexpr CameraSpecification(f32 _height, f32 _aspectRatio, f32 _focalLength, point3 _origin) :
@@ -57,7 +57,7 @@ struct CameraSpecification {
     * @param v value at y-axis, where ray should point to
     * @return calculated ray direction
     */
-    constexpr vec3<> calculateRayDirection(f32 u, f32 v) const {
+    constexpr vector3 calculateRayDirection(f32 u, f32 v) const {
         return lowerLeftCorner + u * horizontal + v * vertical - origin;
     }
 
@@ -77,7 +77,7 @@ void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
 * @return colored ray
 */
 color colorRay(const Ray& r) {
-    const vec3<f32> unitDirection{ unitVector(r.direction) };
+    const vector3 unitDirection{ unitVector(r.direction) };
     const f32 t{ 0.5f * (unitDirection.y + 1.f) };          // scaling t to <0.f, 1.f>
     constexpr color white{ 1.f, 1.f, 1.f };
     constexpr color blue{ 0.5f, 0.7f, 1.f };
