@@ -18,42 +18,42 @@ struct vec3 {
     union { f32 y, g; };
     union { f32 z, b; };
 
-    vec3() :
+    constexpr vec3() :
         x{ 0.f },
         y{ 0.f },
         z{ 0.f }
     {}
-    vec3(val _x, val _y, val _z) :
+    constexpr vec3(val _x, val _y, val _z) :
         x{ _x },
         y{ _y},
         z{ _z }
     {}
 
-    vec3 operator-() const { return vec3(-x, -y, -z); }
+    constexpr vec3 operator-() const { return vec3(-x, -y, -z); }
 
-    vec3& operator+=(vec3 v) {
+    constexpr vec3& operator+=(vec3 v) {
         x += v.x;
         y += v.y;
         z += v.z;
         return *this;
     }
 
-    vec3& operator*=(val v) {
+    constexpr vec3& operator*=(val v) {
         x *= v;
         y *= v;
         z *= v;
         return *this;
     }
 
-    vec3& operator/=(val v) {
+    constexpr vec3& operator/=(val v) {
         return *this *= 1 / v;
     }
 
-    val length() const {
+    constexpr val length() const {
         return sqrt(length_squared());
     }
 
-    val length_squared() const {
+    constexpr val length_squared() const {
         return x * x + y * y + z * z;
     }
 
@@ -66,47 +66,47 @@ using color = vec3<>;
 
 
 template<typename val = f32>
-inline std::ostream& operator<<(std::ostream& out, vec3<val> v) {
+constexpr inline std::ostream& operator<<(std::ostream& out, vec3<val> v) {
     return out << v.x << ' ' << v.y << ' ' << v.z;
 }
 
 template<typename val = f32>
-inline vec3<val> operator+(vec3<val> u, vec3<val> v) {
+constexpr inline vec3<val> operator+(vec3<val> u, vec3<val> v) {
     return vec3(u.x + v.x, u.y + v.y, u.z + v.z);
 }
 
 template<typename val = f32>
-inline vec3<val> operator-(vec3<val> u, vec3<val> v) {
+constexpr inline vec3<val> operator-(vec3<val> u, vec3<val> v) {
     return vec3(u.x - v.x, u.y - v.y, u.z - v.z);
 }
 
 template<typename val = f32>
-inline vec3<val> operator*(vec3<val> u, vec3<val> v) {
+constexpr inline vec3<val> operator*(vec3<val> u, vec3<val> v) {
     return vec3(u.x * v.x, u.y * v.y, u.z * v.z);
 }
 
 template<typename val = f32>
-inline vec3<val> operator*(double t, vec3<val> v) {
+constexpr inline vec3<val> operator*(val t, vec3<val> v) {
     return vec3(t * v.x, t * v.y, t * v.z);
 }
 
 template<typename val = f32>
-inline vec3<val> operator*(vec3<val> v, double t) {
+constexpr inline vec3<val> operator*(vec3<val> v, val t) {
     return t * v;
 }
 
 template<typename val = f32>
-inline vec3<val> operator/(vec3<val> v, double t) {
+constexpr inline vec3<val> operator/(vec3<val> v, val t) {
     return (1 / t) * v;
 }
 
 template<typename val = f32>
-inline double dot(vec3<val> u, vec3<val> v) {
+constexpr inline double dot(vec3<val> u, vec3<val> v) {
     return u.x * v.x + u.y * v.y + u.z * v.z;
 }
 
 template<typename val = f32>
-inline vec3<val> cross(vec3<val> u, vec3<val> v) {
+constexpr inline vec3<val> cross(vec3<val> u, vec3<val> v) {
     return vec3(
         u.y * v.z - u.z * v.y,
         u.z * v.x - u.x * v.z,
@@ -115,7 +115,7 @@ inline vec3<val> cross(vec3<val> u, vec3<val> v) {
 }
 
 template<typename val = f32>
-inline vec3<val> unit_vector(vec3<val> v) {
+constexpr inline vec3<val> unitVector(vec3<val> v) {
     return v / v.length();
 }
 

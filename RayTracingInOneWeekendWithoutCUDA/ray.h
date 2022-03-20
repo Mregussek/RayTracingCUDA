@@ -7,21 +7,21 @@
 #include "vec3.h"
 
 
-struct ray {
+struct Ray {
 
 	point3 origin{};
 	vector3 direction{};
 
 
-	ray() = default;
+	constexpr Ray() = default;
 
-	ray(point3 _origin, vector3 _direction) :
+	constexpr Ray(point3 _origin, vector3 _direction) :
 		origin{ _origin },
 		direction{ _direction }
 	{ }
 
 	template<typename val = f32>
-	point3 at(val t) {
+	constexpr point3 at(val t) {
 		return origin + t * direction;
 	}
 
