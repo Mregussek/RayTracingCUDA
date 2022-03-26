@@ -6,6 +6,10 @@
 #include "defines.h"
 
 
+static constexpr color white{ 1.f, 1.f, 1.f };
+static constexpr color blue{ 0.5f, 0.7f, 1.f };
+
+
 struct ImageSpecification {
 
     i32 width{ 0 };
@@ -47,7 +51,7 @@ struct CameraSpecification {
     * @return Calculated point3, which says, where bottom left corner is.
     */
     constexpr point3 calculateLowerLeftCorner() {
-        return origin - horizontal / 2.f - vertical / 2.f + point3(0.f, 0.f, focalLength);
+        return origin - horizontal / 2.f - vertical / 2.f + point3(0.f, 0.f, -focalLength);
     }
 
     /*
@@ -69,6 +73,21 @@ void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
 }
 
 
+f32 hitSphere(const point3& center, f32 radius, const Ray& ray) {
+    const vector3 oc{ ray.origin - center };
+    const f32 a{ vector3::dot(ray.direction, ray.direction) };
+    const f32 b{ 2.f * vector3::dot(oc, ray.direction) };
+    const f32 c{ vector3::dot(oc, oc) - radius * radius };
+    const f32 delta{ b * b - 4 * a * c };
+    if (delta < 0) {
+        return -1.f;
+    }
+    else {
+        return (-b - sqrt(delta)) / (2.f * a);
+    }
+}
+
+
 /*
 * @brief Function linearly blends white and blue depending on the height of the y coordinate after scaling the ray
 * direction to unit length (-1.f, 1.f). Because we're looking at the y height after normalizing the vector, you'll
@@ -77,10 +96,13 @@ void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
 * @return colored ray
 */
 color colorRay(const Ray& r) {
-    const vector3 unitDirection{ unitVector(r.direction) };
+    const f32 hitPoint{ hitSphere(point3(0.f, 0.f, -1.f), 0.5f, r) };
+    if (hitPoint > 0.f) {
+        const vector3 n{ vector3::normalize(r.at(hitPoint) - vector3(0.f, 0.f, -1.f)) };
+        return 0.5f * (color(n.x, n.y, n.z) + 1.f);
+    }
+    const vector3 unitDirection{ vector3::normalize(r.direction) };
     const f32 t{ 0.5f * (unitDirection.y + 1.f) };          // scaling t to <0.f, 1.f>
-    constexpr color white{ 1.f, 1.f, 1.f };
-    constexpr color blue{ 0.5f, 0.7f, 1.f };
     return (1.f - t) * white + t * blue;                    // blendedValue = (1 - t) * startValue + t * endValue
                                                             // when t=0 I want white, when t=1 I want blue
 }
@@ -89,7 +111,7 @@ color colorRay(const Ray& r) {
 auto main() -> i32 {
 	
     constexpr ImageSpecification image{ 720, 405 };
-    constexpr CameraSpecification camera{ 2.f, image.aspectRatio, -1.f, point3{ 0.f, 0.f, 0.f } };
+    constexpr CameraSpecification camera{ 2.f, image.aspectRatio, 1.f, point3{ 0.f, 0.f, 0.f } };
 
     std::ofstream file;
     file.open("output_filename.ppm");

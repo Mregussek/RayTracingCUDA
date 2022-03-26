@@ -50,11 +50,23 @@ struct vec3 {
     }
 
     constexpr val length() const {
-        return sqrt(length_squared());
+        return sqrt(dot(*this, *this));
     }
 
-    constexpr val length_squared() const {
-        return x * x + y * y + z * z;
+    constexpr static inline f32 dot(vec3<val> u, vec3<val> v) {
+        return u.x * v.x + u.y * v.y + u.z * v.z;
+    }
+
+    constexpr static inline vec3<val> cross(vec3<val> u, vec3<val> v) {
+        return vec3<val>(
+            u.y * v.z - u.z * v.y,
+            u.z * v.x - u.x * v.z,
+            u.x * v.y - u.y * v.x
+        );
+    }
+
+    constexpr static inline vec3<val> normalize(vec3<val> v) {
+        return v / v.length();
     }
 
 };
@@ -86,6 +98,16 @@ constexpr inline vec3<val> operator*(vec3<val> u, vec3<val> v) {
 }
 
 template<typename val = f32>
+constexpr inline vec3<val> operator+(val t, vec3<val> v) {
+    return vec3(t + v.x, t + v.y, t + v.z);
+}
+
+template<typename val = f32>
+constexpr inline vec3<val> operator+(vec3<val> v, val t) {
+    return t + v;
+}
+
+template<typename val = f32>
 constexpr inline vec3<val> operator*(val t, vec3<val> v) {
     return vec3(t * v.x, t * v.y, t * v.z);
 }
@@ -98,25 +120,6 @@ constexpr inline vec3<val> operator*(vec3<val> v, val t) {
 template<typename val = f32>
 constexpr inline vec3<val> operator/(vec3<val> v, val t) {
     return (1 / t) * v;
-}
-
-template<typename val = f32>
-constexpr inline double dot(vec3<val> u, vec3<val> v) {
-    return u.x * v.x + u.y * v.y + u.z * v.z;
-}
-
-template<typename val = f32>
-constexpr inline vec3<val> cross(vec3<val> u, vec3<val> v) {
-    return vec3(
-        u.y * v.z - u.z * v.y,
-        u.z * v.x - u.x * v.z,
-        u.x * v.y - u.y * v.x
-    );
-}
-
-template<typename val = f32>
-constexpr inline vec3<val> unitVector(vec3<val> v) {
-    return v / v.length();
 }
 
 template<typename val = f32>

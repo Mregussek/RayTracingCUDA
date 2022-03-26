@@ -20,7 +20,7 @@ struct Ray {
 	{ }
 
 	template<typename val = f32>
-	constexpr point3 at(val t) {
+	constexpr point3 at(val t) const {
 		return origin + t * direction;
 	}
 
