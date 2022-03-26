@@ -69,7 +69,7 @@ struct CameraSpecification {
 
 
 void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
-    std::cerr << "\rImage " << image.height << "x" << image.width << " Scanlines remaining : " << remaining << ' ' << std::flush;
+    std::cerr << "\rImage " << image.width << "x" << image.height << " Scanlines remaining : " << remaining << ' ' << std::flush;
 }
 
 

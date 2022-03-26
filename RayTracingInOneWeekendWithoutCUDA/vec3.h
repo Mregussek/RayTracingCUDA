@@ -23,6 +23,7 @@ struct vec3 {
         y{ 0.f },
         z{ 0.f }
     {}
+
     constexpr vec3(val _x, val _y, val _z) :
         x{ _x },
         y{ _y },
@@ -53,19 +54,19 @@ struct vec3 {
         return sqrt(dot(*this, *this));
     }
 
-    constexpr static inline f32 dot(vec3<val> u, vec3<val> v) {
+    constexpr static inline val dot(vec3<val> u, vec3<val> v) {
         return u.x * v.x + u.y * v.y + u.z * v.z;
     }
 
-    constexpr static inline vec3<val> cross(vec3<val> u, vec3<val> v) {
-        return vec3<val>(
+    constexpr static inline vec3 cross(vec3 u, vec3 v) {
+        return vec3(
             u.y * v.z - u.z * v.y,
             u.z * v.x - u.x * v.z,
             u.x * v.y - u.y * v.x
         );
     }
 
-    constexpr static inline vec3<val> normalize(vec3<val> v) {
+    constexpr static inline vec3 normalize(vec3 v) {
         return v / v.length();
     }
 
