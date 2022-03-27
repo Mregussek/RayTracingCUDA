@@ -54,11 +54,11 @@ struct vec3 {
         return sqrt(dot(*this, *this));
     }
 
-    constexpr static inline val dot(vec3<val> u, vec3<val> v) {
+    constexpr static val dot(vec3<val> u, vec3<val> v) {
         return u.x * v.x + u.y * v.y + u.z * v.z;
     }
 
-    constexpr static inline vec3 cross(vec3 u, vec3 v) {
+    constexpr static vec3 cross(vec3 u, vec3 v) {
         return vec3(
             u.y * v.z - u.z * v.y,
             u.z * v.x - u.x * v.z,
@@ -79,47 +79,47 @@ using color = vec3<>;
 
 
 template<typename val = f32>
-constexpr inline std::ostream& operator<<(std::ostream& out, vec3<val> v) {
+constexpr std::ostream& operator<<(std::ostream& out, vec3<val> v) {
     return out << v.x << ' ' << v.y << ' ' << v.z;
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator+(vec3<val> u, vec3<val> v) {
+constexpr vec3<val> operator+(vec3<val> u, vec3<val> v) {
     return vec3(u.x + v.x, u.y + v.y, u.z + v.z);
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator-(vec3<val> u, vec3<val> v) {
+constexpr vec3<val> operator-(vec3<val> u, vec3<val> v) {
     return vec3(u.x - v.x, u.y - v.y, u.z - v.z);
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator*(vec3<val> u, vec3<val> v) {
+constexpr vec3<val> operator*(vec3<val> u, vec3<val> v) {
     return vec3(u.x * v.x, u.y * v.y, u.z * v.z);
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator+(val t, vec3<val> v) {
+constexpr vec3<val> operator+(val t, vec3<val> v) {
     return vec3(t + v.x, t + v.y, t + v.z);
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator+(vec3<val> v, val t) {
+constexpr vec3<val> operator+(vec3<val> v, val t) {
     return t + v;
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator*(val t, vec3<val> v) {
+constexpr vec3<val> operator*(val t, vec3<val> v) {
     return vec3(t * v.x, t * v.y, t * v.z);
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator*(vec3<val> v, val t) {
+constexpr vec3<val> operator*(vec3<val> v, val t) {
     return t * v;
 }
 
 template<typename val = f32>
-constexpr inline vec3<val> operator/(vec3<val> v, val t) {
+constexpr vec3<val> operator/(vec3<val> v, val t) {
     return (1 / t) * v;
 }
 

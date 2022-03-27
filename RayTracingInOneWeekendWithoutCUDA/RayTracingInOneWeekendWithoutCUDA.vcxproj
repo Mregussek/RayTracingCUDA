@@ -144,7 +144,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h" />
-    <ClInclude Include="ray.h" />
+    <ClInclude Include="HittableList.h" />
+    <ClInclude Include="HittableObjects.h" />
+    <ClInclude Include="HittableSphere.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

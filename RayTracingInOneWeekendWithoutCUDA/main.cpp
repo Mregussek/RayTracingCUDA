@@ -1,10 +1,16 @@
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include "vec3.h"
-#include "ray.h"
+#include "Ray.h"
 #include "defines.h"
+#include "HittableList.h"
+#include "HittableObjects.h"
+#include "HittableSphere.h"
 
+
+static constexpr f32 infinity{ std::numeric_limits<f32>::infinity() };
 
 static constexpr color white{ 1.f, 1.f, 1.f };
 static constexpr color blue{ 0.5f, 0.7f, 1.f };
@@ -73,21 +79,6 @@ void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
 }
 
 
-f32 hitSphere(const point3& center, f32 radius, const Ray& ray) {
-    const vector3 oc{ ray.origin - center };
-    const f32 a{ vector3::dot(ray.direction, ray.direction) };
-    const f32 b{ 2.f * vector3::dot(oc, ray.direction) };
-    const f32 c{ vector3::dot(oc, oc) - radius * radius };
-    const f32 delta{ b * b - 4 * a * c };
-    if (delta < 0) {
-        return -1.f;
-    }
-    else {
-        return (-b - sqrt(delta)) / (2.f * a);
-    }
-}
-
-
 /*
 * @brief Function linearly blends white and blue depending on the height of the y coordinate after scaling the ray
 * direction to unit length (-1.f, 1.f). Because we're looking at the y height after normalizing the vector, you'll
@@ -95,13 +86,12 @@ f32 hitSphere(const point3& center, f32 radius, const Ray& ray) {
 * @param r just ray, which shall be colored
 * @return colored ray
 */
-color colorRay(const Ray& r) {
-    const f32 hitPoint{ hitSphere(point3(0.f, 0.f, -1.f), 0.5f, r) };
-    if (hitPoint > 0.f) {
-        const vector3 n{ vector3::normalize(r.at(hitPoint) - vector3(0.f, 0.f, -1.f)) };
-        return 0.5f * (color(n.x, n.y, n.z) + 1.f);
+color colorRay(const Ray& ray, const HittableObject* pWorld) {
+    HitSpecification hitSpecs;
+    if (pWorld->hit(ray, HitInterval{ 0.f, infinity }, &hitSpecs)) {
+        return 0.5f * (hitSpecs.normal + color(1.f, 1.f, 1.f));
     }
-    const vector3 unitDirection{ vector3::normalize(r.direction) };
+    const vector3 unitDirection{ vector3::normalize(ray.direction) };
     const f32 t{ 0.5f * (unitDirection.y + 1.f) };          // scaling t to <0.f, 1.f>
     return (1.f - t) * white + t * blue;                    // blendedValue = (1 - t) * startValue + t * endValue
                                                             // when t=0 I want white, when t=1 I want blue
@@ -113,6 +103,10 @@ auto main() -> i32 {
     constexpr ImageSpecification image{ 720, 405 };
     constexpr CameraSpecification camera{ 2.f, image.aspectRatio, 1.f, point3{ 0.f, 0.f, 0.f } };
 
+    HittableSphere* pSphere1{ new HittableSphere{ point3{ 0.f, 0.f,-1.f}, 0.5f } };
+    HittableSphere* pSphere2{ new HittableSphere{ point3{ 0.f, -100.5f, -1.f}, 100.f } };
+    HittableList world{ pSphere1, pSphere2 };
+
     std::ofstream file;
     file.open("output_filename.ppm");
     file << "P3\n" << image.width << ' ' << image.height << "\n255\n";
@@ -121,12 +115,13 @@ auto main() -> i32 {
         for (i32 i = 0; i < image.width; i++) {
             const f32 u = (f32)i / ((f32)image.width - 1.f);
             const f32 v = (f32)j / ((f32)image.height - 1.f);
-            const Ray r{ camera.origin, camera.calculateRayDirection(u, v) };
-            color pixel{ colorRay(r) };
+            const Ray ray{ camera.origin, camera.calculateRayDirection(u, v) };
+            color pixel{ colorRay(ray, &world) };
             writeColor(file, pixel);
         }
     }
     file.close();
+    world.clear();
     std::cerr << "\nDone.\n";
 	return 0;
 }
