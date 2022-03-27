@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <random>
 #include <limits>
 #include "vec3.h"
 #include "Ray.h"
@@ -17,17 +18,25 @@ static constexpr color white{ 1.f, 1.f, 1.f };
 static constexpr color blue{ 0.5f, 0.7f, 1.f };
 
 
+template<typename val = f32>
+val generateRandom() {
+    static std::uniform_real_distribution<val> distribution((val)0.0, (val)1.0);
+    static std::mt19937 generator;
+    return (val)distribution(generator);
+}
+
+template<typename val = f32>
+val returnZero() {
+    return 0.f;
+}
+
+
 struct ImageSpecification {
 
     i32 width{ 0 };
     i32 height{ 0 };
     f32 aspectRatio{ 0.f };
-
-    constexpr ImageSpecification(i32 _w, i32 _h) :
-        width(_w),
-        height(_h),
-        aspectRatio((f32)_w / (f32)_h)
-    { }
+    i32 samplesPerPixel{ 0 };
 
 };
 
@@ -44,9 +53,9 @@ void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
 * @param r just ray, which shall be colored
 * @return colored ray
 */
-color colorRay(const Ray& ray, const HittableObject* pWorld) {
+color colorRay(const Ray& ray, const HittableObject* pObject) {
     HitSpecification hitSpecs;
-    if (pWorld->hit(ray, HitInterval{ 0.f, infinity }, &hitSpecs)) {
+    if (pObject->hit(ray, HitInterval{ 0.f, infinity }, &hitSpecs)) {
         return 0.5f * (hitSpecs.normal + color(1.f, 1.f, 1.f));
     }
     const vector3 unitDirection{ vector3::normalize(ray.direction) };
@@ -58,7 +67,13 @@ color colorRay(const Ray& ray, const HittableObject* pWorld) {
 
 auto main() -> i32 {
 
-    constexpr ImageSpecification image{ 720, 405 };
+    ImageSpecification image{};
+    image.width = 720;
+    image.height = 405;
+    image.aspectRatio = (f32)image.width / (f32)image.height;
+    image.samplesPerPixel = 20;
+    
+    f32(*multisampleFunc)() = image.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
 
     CameraSpecification cameraSpecification{};
     cameraSpecification.height = 2.f;
@@ -79,11 +94,14 @@ auto main() -> i32 {
     for (i32 j = image.height - 1; j >= 0; j--) {
         printRemainingScanlinesWithInfo(image, j);
         for (i32 i = 0; i < image.width; i++) {
-            const f32 u = (f32)i / ((f32)image.width - 1.f);
-            const f32 v = (f32)j / ((f32)image.height - 1.f);
-            const Ray ray{ camera.origin(), camera.calculateRayDirection(u, v)};
-            color pixel{ colorRay(ray, &world) };
-            writeColor(file, pixel);
+            color pixel{ 0.f, 0.f, 0.f };
+            for (i32 s = 0; s < image.samplesPerPixel; s++) {
+                const f32 u = ((f32)i + multisampleFunc()) / ((f32)image.width - 1.f);
+                const f32 v = ((f32)j + multisampleFunc()) / ((f32)image.height - 1.f);
+                const Ray ray{ camera.origin(), camera.calculateRayDirection(u, v) };
+                pixel += colorRay(ray, &world);
+            }
+            writeColor(file, pixel, image.samplesPerPixel);
         }
     }
     file.close();
