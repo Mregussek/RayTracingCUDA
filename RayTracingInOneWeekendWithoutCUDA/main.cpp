@@ -8,6 +8,7 @@
 #include "HittableList.h"
 #include "HittableObjects.h"
 #include "HittableSphere.h"
+#include "Camera.h"
 
 
 static constexpr f32 infinity{ std::numeric_limits<f32>::infinity() };
@@ -27,49 +28,6 @@ struct ImageSpecification {
         height(_h),
         aspectRatio((f32)_w / (f32)_h)
     { }
-
-};
-
-
-struct CameraSpecification {
-
-    f32 height{ 0.f };
-    f32 width{ 0.f };
-    f32 focalLength{ 1.f };
-
-    point3 origin{ 0.f, 0.f, 0.f };
-    vector3 horizontal{ 0.f, 0.f, 0.f };
-    vector3 vertical{ 0.f, 0.f, 0.f };
-    point3 lowerLeftCorner{ 0.f, 0.f, 0.f };
-
-    constexpr CameraSpecification(f32 _height, f32 _aspectRatio, f32 _focalLength, point3 _origin) :
-        height(_height),
-        width(_height * _aspectRatio),
-        focalLength(_focalLength),
-        origin(_origin),
-        horizontal(width, 0.f, 0.f),
-        vertical(0.f, height, 0.f),
-        lowerLeftCorner(calculateLowerLeftCorner())
-    { }
-
-    /*
-    * @brief Calculates Bottom Left Corner at the image. Needs origin, horizontal, vertical and focalLength.
-    * @return Calculated point3, which says, where bottom left corner is.
-    */
-    constexpr point3 calculateLowerLeftCorner() {
-        return origin - horizontal / 2.f - vertical / 2.f + point3(0.f, 0.f, -focalLength);
-    }
-
-    /*
-    * @brief Calculates ray direction vec3 at the output scene. Needs param that are in <0, 1> range, where
-    * bottom left corner is (0, 0) and top right corner is (1, 1).
-    * @param u value at x-axis, where ray should point to
-    * @param v value at y-axis, where ray should point to
-    * @return calculated ray direction
-    */
-    constexpr vector3 calculateRayDirection(f32 u, f32 v) const {
-        return lowerLeftCorner + u * horizontal + v * vertical - origin;
-    }
 
 };
 
@@ -99,13 +57,21 @@ color colorRay(const Ray& ray, const HittableObject* pWorld) {
 
 
 auto main() -> i32 {
-	
-    constexpr ImageSpecification image{ 720, 405 };
-    constexpr CameraSpecification camera{ 2.f, image.aspectRatio, 1.f, point3{ 0.f, 0.f, 0.f } };
 
-    HittableSphere* pSphere1{ new HittableSphere{ point3{ 0.f, 0.f,-1.f}, 0.5f } };
-    HittableSphere* pSphere2{ new HittableSphere{ point3{ 0.f, -100.5f, -1.f}, 100.f } };
-    HittableList world{ pSphere1, pSphere2 };
+    constexpr ImageSpecification image{ 720, 405 };
+
+    CameraSpecification cameraSpecification{};
+    cameraSpecification.height = 2.f;
+    cameraSpecification.width = cameraSpecification.height * image.aspectRatio;
+    cameraSpecification.focalLength = 1.f;
+    cameraSpecification.origin = point3{ 0.f, 0.f, 0.f };
+    
+    Camera camera{ cameraSpecification };
+
+    HittableList world{
+        new HittableSphere{ point3{ 0.f, 0.f,-1.f}, 0.5f },
+        new HittableSphere{ point3{ 0.f, -100.5f, -1.f}, 100.f }
+    };
 
     std::ofstream file;
     file.open("output_filename.ppm");
@@ -115,7 +81,7 @@ auto main() -> i32 {
         for (i32 i = 0; i < image.width; i++) {
             const f32 u = (f32)i / ((f32)image.width - 1.f);
             const f32 v = (f32)j / ((f32)image.height - 1.f);
-            const Ray ray{ camera.origin, camera.calculateRayDirection(u, v) };
+            const Ray ray{ camera.origin(), camera.calculateRayDirection(u, v)};
             color pixel{ colorRay(ray, &world) };
             writeColor(file, pixel);
         }

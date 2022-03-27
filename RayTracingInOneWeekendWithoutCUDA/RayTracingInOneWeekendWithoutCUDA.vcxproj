@@ -143,6 +143,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="HittableList.h" />
     <ClInclude Include="HittableObjects.h" />
