@@ -4,6 +4,7 @@
 
 
 #include "HittableObjects.h"
+#include "defines.h"
 #include <initializer_list>
 #include <vector>
 
@@ -31,12 +32,12 @@ public:
 
 	b8 hit(const Ray& ray, HitInterval interval, HitSpecification* specs) const override {
 		HitSpecification tmpSpecs;
-		b8 hitAnything{ 0 };
+		b8 hitAnything{ RTX_FALSE };
 		f32 closestSoFar{ interval.max };
 
 		for (const HittableObject* object : objects) {
 			if (object->hit(ray, HitInterval{ interval.min, closestSoFar }, &tmpSpecs)) {
-				hitAnything = 1;
+				hitAnything = RTX_TRUE;
 				closestSoFar = tmpSpecs.t;
 				*specs = tmpSpecs;
 			}

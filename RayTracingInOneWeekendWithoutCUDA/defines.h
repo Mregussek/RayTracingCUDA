@@ -22,5 +22,8 @@ using f64 = double;
 using b8 = i8;
 using b32 = i32;
 
+#define RTX_TRUE 1
+#define RTX_FALSE 0
+
 
 #endif

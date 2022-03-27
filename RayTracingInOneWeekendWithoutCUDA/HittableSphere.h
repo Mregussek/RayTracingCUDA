@@ -49,7 +49,7 @@ public:
 		const vector3 outwardNormal{ (hitPoint - center) / radius };
 		hitSpecs->t = root;
 		hitSpecs->point = hitPoint;
-		hitSpecs->frontFace = vector3::dot(ray.direction, outwardNormal) < 0;
+		hitSpecs->frontFace = vector3::dot(ray.direction, outwardNormal) < 0 ? RTX_TRUE : RTX_FALSE;
 		hitSpecs->normal = hitSpecs->frontFace ? outwardNormal : -outwardNormal;
 		return true;
 	}
