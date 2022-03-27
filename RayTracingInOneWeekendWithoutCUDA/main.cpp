@@ -71,7 +71,7 @@ auto main() -> i32 {
     image.width = 720;
     image.height = 405;
     image.aspectRatio = (f32)image.width / (f32)image.height;
-    image.samplesPerPixel = 20;
+    image.samplesPerPixel = 1;
     
     f32(*multisampleFunc)() = image.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
 
