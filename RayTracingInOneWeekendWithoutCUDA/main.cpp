@@ -84,7 +84,10 @@ auto main() -> i32 {
     Camera camera{ cameraSpecification };
 
     HittableList world{
-        new HittableSphere{ point3{ 0.f, 0.f,-1.f}, 0.5f },
+        new HittableSphere{ point3{ 0.f, 0.f, -1.f}, 0.5f },
+        new HittableSphere{ point3{ 1.5f, 0.f, -2.f}, 0.5f },
+        new HittableSphere{ point3{ -1.5f, 0.f, -2.f}, 0.5f },
+        new HittableSphere{ point3{ -1.f, 0.f, -1.f}, 0.3f },
         new HittableSphere{ point3{ 0.f, -100.5f, -1.f}, 100.f }
     };
 
