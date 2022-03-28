@@ -18,25 +18,13 @@ static constexpr color white{ 1.f, 1.f, 1.f };
 static constexpr color blue{ 0.5f, 0.7f, 1.f };
 
 
-template<typename val = f32>
-val generateRandom() {
-    static std::uniform_real_distribution<val> distribution((val)0.0, (val)1.0);
-    static std::mt19937 generator;
-    return (val)distribution(generator);
-}
-
-template<typename val = f32>
-val returnZero() {
-    return 0.f;
-}
-
-
 struct ImageSpecification {
 
     i32 width{ 0 };
     i32 height{ 0 };
     f32 aspectRatio{ 0.f };
     i32 samplesPerPixel{ 0 };
+    i32 recursionDepth{ 0 };
 
 };
 
@@ -53,10 +41,16 @@ void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
 * @param r just ray, which shall be colored
 * @return colored ray
 */
-color colorRay(const Ray& ray, const HittableObject* pObject) {
+color colorRay(const Ray& ray, const HittableObject* pObject, i32 depth) {
+    if (depth <= 0) {
+        return color{ 0.f, 0.f, 0.f };
+    }
+
     HitSpecification hitSpecs;
     if (pObject->hit(ray, HitInterval{ 0.f, infinity }, &hitSpecs)) {
-        return 0.5f * (hitSpecs.normal + color(1.f, 1.f, 1.f));
+        const point3 target{ hitSpecs.point + hitSpecs.normal + HittableSphere::isRandomInUnitSphere() };
+        const Ray rayFromSphere{ hitSpecs.point, target - hitSpecs.point };
+        return 0.5f * colorRay(rayFromSphere, pObject, depth - 1);
     }
     const vector3 unitDirection{ vector3::normalize(ray.direction) };
     const f32 t{ 0.5f * (unitDirection.y + 1.f) };          // scaling t to <0.f, 1.f>
@@ -71,7 +65,8 @@ auto main() -> i32 {
     image.width = 720;
     image.height = 405;
     image.aspectRatio = (f32)image.width / (f32)image.height;
-    image.samplesPerPixel = 1;
+    image.samplesPerPixel = 2;
+    image.recursionDepth = 50;
     
     f32(*multisampleFunc)() = image.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
 
@@ -102,7 +97,7 @@ auto main() -> i32 {
                 const f32 u = ((f32)i + multisampleFunc()) / ((f32)image.width - 1.f);
                 const f32 v = ((f32)j + multisampleFunc()) / ((f32)image.height - 1.f);
                 const Ray ray{ camera.origin(), camera.calculateRayDirection(u, v) };
-                pixel += colorRay(ray, &world);
+                pixel += colorRay(ray, &world, image.recursionDepth);
             }
             writeColor(file, pixel, image.samplesPerPixel);
         }

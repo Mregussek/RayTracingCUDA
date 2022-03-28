@@ -57,6 +57,10 @@ struct vec3 {
     constexpr static val dot(vec3<val> u, vec3<val> v) {
         return u.x * v.x + u.y * v.y + u.z * v.z;
     }
+    
+    constexpr static vec3 square(vec3 v) {
+        return vec3(sqrt(x), sqrt(y), sqrt(z));
+    }
 
     constexpr static vec3 cross(vec3 u, vec3 v) {
         return vec3(
@@ -66,8 +70,16 @@ struct vec3 {
         );
     }
 
-    constexpr static inline vec3 normalize(vec3 v) {
+    constexpr static vec3 normalize(vec3 v) {
         return v / v.length();
+    }
+
+    static vec3 random() {
+        return { generateRandom(), generateRandom(), generateRandom() };
+    }
+
+    static vec3 random(val min, val max) {
+        return { generateRandomInRange(min, max), generateRandomInRange(min, max), generateRandomInRange(min, max) };
     }
 
 };
@@ -138,6 +150,10 @@ template<typename val = f32>
 void writeColor(std::ostream& out, vec3<val> pixel, i32 samplesPerPixel) {
     const f32 scale{ 1.f / (f32)samplesPerPixel };
     pixel *= scale;
+
+    if constexpr (ENABLE_GAMMA_CORRECTION) {
+        pixel = vector3::square(pixel);
+    }
 
     out << (i32)((val)255.999f * clamp(pixel.r, 0.f, 0.999f)) << ' '
         << (i32)((val)255.999f * clamp(pixel.g, 0.f, 0.999f)) << ' '

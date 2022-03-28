@@ -54,6 +54,16 @@ public:
 		return true;
 	}
 
+	static vector3 isRandomInUnitSphere() {
+		while (true) {
+			const vector3 r{ vector3::random(-1.f, 1.f) };
+			if (vector3::dot(r, r) >= 1) {
+				continue;
+			}
+			return r;
+		}
+	}
+
 private:
 
 	point3 center{ 0.f, 0.f, 0.f };
