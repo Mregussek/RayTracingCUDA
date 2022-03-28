@@ -47,8 +47,8 @@ color colorRay(const Ray& ray, const HittableObject* pObject, i32 depth) {
     }
 
     HitSpecification hitSpecs;
-    if (pObject->hit(ray, HitInterval{ 0.f, infinity }, &hitSpecs)) {
-        const point3 target{ hitSpecs.point + hitSpecs.normal + HittableSphere::isRandomInUnitSphere() };
+    if (pObject->hit(ray, HitInterval{ 0.001f, infinity }, &hitSpecs)) {
+        const point3 target{ hitSpecs.point + hitSpecs.normal + vector3::normalize(HittableSphere::isRandomInUnitSphere()) };
         const Ray rayFromSphere{ hitSpecs.point, target - hitSpecs.point };
         return 0.5f * colorRay(rayFromSphere, pObject, depth - 1);
     }
@@ -65,8 +65,8 @@ auto main() -> i32 {
     image.width = 720;
     image.height = 405;
     image.aspectRatio = (f32)image.width / (f32)image.height;
-    image.samplesPerPixel = 2;
-    image.recursionDepth = 50;
+    image.samplesPerPixel = 10;
+    image.recursionDepth = 100;
     
     f32(*multisampleFunc)() = image.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
 

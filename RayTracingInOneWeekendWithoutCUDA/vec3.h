@@ -59,7 +59,7 @@ struct vec3 {
     }
     
     constexpr static vec3 square(vec3 v) {
-        return vec3(sqrt(x), sqrt(y), sqrt(z));
+        return vec3(sqrt(v.x), sqrt(v.y), sqrt(v.z));
     }
 
     constexpr static vec3 cross(vec3 u, vec3 v) {
