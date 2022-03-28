@@ -10,18 +10,22 @@
 #include "Ray.h"
 
 
+class Material;
+
+
 class HittableSphere : public HittableObject {
 public:
 
 	constexpr HittableSphere() = default;
-	constexpr HittableSphere(point3 _center, f32 _radius) :
+	constexpr HittableSphere(point3 _center, f32 _radius, Material* _pMaterial) :
 		center(_center),
-		radius(_radius)
+		radius(_radius),
+		pMaterial(_pMaterial)
 	{ }
 
 	constexpr b8 hit(const Ray& ray, HitInterval interval, HitSpecification* hitSpecs) const override {
 		if (!hitSpecs) {
-			return false;
+			return RTX_FALSE;
 		}
 
 		// Sphere Equation Calcation, looking for discriminant (delta). If no roots, then delta < 0,
@@ -32,7 +36,7 @@ public:
 		const f32 c{ vector3::dot(oc, oc) - radius * radius };
 		const f32 delta{ b * b - 4 * a * c };
 		if (delta < 0) {
-			return false;
+			return RTX_FALSE;
 		}
 
 		// Checking if first root is between interval, if not validating second root. Applicable root stays in "root" variable.
@@ -40,7 +44,7 @@ public:
 		if (root < interval.min || interval.max < root) {
 			root = (-b + sqrt(delta)) / (2.f * a);
 			if (root < interval.min || interval.max < root) {
-				return false;
+				return RTX_FALSE;
 			}
 		}
 
@@ -51,7 +55,16 @@ public:
 		hitSpecs->point = hitPoint;
 		hitSpecs->frontFace = vector3::dot(ray.direction, outwardNormal) < 0 ? RTX_TRUE : RTX_FALSE;
 		hitSpecs->normal = hitSpecs->frontFace ? outwardNormal : -outwardNormal;
-		return true;
+		hitSpecs->pMaterial = pMaterial;
+		return RTX_TRUE;
+	}
+
+	b8 deleteMaterial() {
+		if (pMaterial) {
+			delete pMaterial;
+			return RTX_TRUE;
+		}
+		return RTX_FALSE;
 	}
 
 	static vector3 isRandomInUnitSphere() {
@@ -68,6 +81,7 @@ private:
 
 	point3 center{ 0.f, 0.f, 0.f };
 	f32 radius{ 0.f };
+	Material* pMaterial{ nullptr };
 
 };
 

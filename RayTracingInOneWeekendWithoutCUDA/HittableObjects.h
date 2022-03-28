@@ -9,6 +9,7 @@
 
 
 struct Ray;
+class Material;
 
 
 struct HitSpecification {
@@ -17,6 +18,7 @@ struct HitSpecification {
 	vector3 normal{ 0.f, 0.f, 0.f };
 	f32 t{ 0.f };
 	b8 frontFace{ 0 };
+	Material* pMaterial;
 
 	constexpr HitSpecification() = default;
 	constexpr HitSpecification(point3 _p, vector3 _n, f32 _t) :
@@ -44,7 +46,8 @@ struct HitInterval {
 class HittableObject {
 public:
 
-	virtual b8 hit(const Ray& ray, HitInterval interval, HitSpecification* hitSpecs) const { return false; }
+	virtual b8 hit(const Ray& ray, HitInterval interval, HitSpecification* hitSpecs) const { return RTX_FALSE; }
+	virtual b8 deleteMaterial() { return RTX_FALSE; }
 
 };
 

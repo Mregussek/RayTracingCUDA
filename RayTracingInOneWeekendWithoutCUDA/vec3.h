@@ -82,6 +82,14 @@ struct vec3 {
         return { generateRandomInRange(min, max), generateRandomInRange(min, max), generateRandomInRange(min, max) };
     }
 
+    static b8 nearZero(vec3 v) {
+        return epsilonEqual(v.x) & epsilonEqual(v.y) & epsilonEqual(v.z);
+    }
+
+    static vec3 reflect(vec3 vector, vec3 normal) {
+        return vector - 2 * dot(vector, normal) * normal;
+    }
+
 };
 
 

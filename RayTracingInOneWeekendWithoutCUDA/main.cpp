@@ -9,6 +9,7 @@
 #include "HittableList.h"
 #include "HittableObjects.h"
 #include "HittableSphere.h"
+#include "Material.h"
 #include "Camera.h"
 
 
@@ -48,9 +49,11 @@ color colorRay(const Ray& ray, const HittableObject* pObject, i32 depth) {
 
     HitSpecification hitSpecs;
     if (pObject->hit(ray, HitInterval{ 0.001f, infinity }, &hitSpecs)) {
-        const point3 target{ hitSpecs.point + hitSpecs.normal + vector3::normalize(HittableSphere::isRandomInUnitSphere()) };
-        const Ray rayFromSphere{ hitSpecs.point, target - hitSpecs.point };
-        return 0.5f * colorRay(rayFromSphere, pObject, depth - 1);
+        Ray scattered;
+        color attenuation;
+        if (hitSpecs.pMaterial->scatter(ray, hitSpecs, &attenuation, &scattered))
+            return attenuation * colorRay(scattered, pObject, depth - 1);
+        return color(0.f, 0.f, 0.f);
     }
     const vector3 unitDirection{ vector3::normalize(ray.direction) };
     const f32 t{ 0.5f * (unitDirection.y + 1.f) };          // scaling t to <0.f, 1.f>
@@ -65,7 +68,7 @@ auto main() -> i32 {
     image.width = 720;
     image.height = 405;
     image.aspectRatio = (f32)image.width / (f32)image.height;
-    image.samplesPerPixel = 10;
+    image.samplesPerPixel = 25;
     image.recursionDepth = 100;
     
     f32(*multisampleFunc)() = image.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
@@ -79,11 +82,11 @@ auto main() -> i32 {
     Camera camera{ cameraSpecification };
 
     HittableList world{
-        new HittableSphere{ point3{ 0.f, 0.f, -1.f}, 0.5f },
-        new HittableSphere{ point3{ 1.5f, 0.f, -2.f}, 0.5f },
-        new HittableSphere{ point3{ -1.5f, 0.f, -2.f}, 0.5f },
-        new HittableSphere{ point3{ -1.f, 0.f, -1.f}, 0.3f },
-        new HittableSphere{ point3{ 0.f, -100.5f, -1.f}, 100.f }
+        new HittableSphere{ point3{ 0.f, 0.f, -1.f}, 0.5f, new Metal{ color{ 0.8f, 0.8f, 0.8f } }},
+        new HittableSphere{ point3{ 1.5f, 0.f, -1.f}, 0.5f, new Lambertian{ color{ 0.7f, 0.3f, 0.3f } }},
+        new HittableSphere{ point3{ -1.5f, 0.f, -2.f}, 0.5f, new Lambertian{ color{ 0.2f, 0.3f, 0.7f } }},
+        new HittableSphere{ point3{ -1.f, -0.2f, -1.f}, 0.3f, new Metal{ color{ 0.8f, 0.6f, 0.2f } }},
+        new HittableSphere{ point3{ 0.f, -100.5f, -1.f}, 100.f, new Lambertian{ color{ 0.8f, 0.8f, 0.f } }}
     };
 
     std::ofstream file;

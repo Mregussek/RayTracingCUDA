@@ -20,6 +20,7 @@ public:
 
 	void clear() {
 		for (HittableObject* obj : objects) {
+			obj->deleteMaterial();
 			delete obj;
 		}
 

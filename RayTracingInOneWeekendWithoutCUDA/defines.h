@@ -5,6 +5,9 @@
 
 #define ENABLE_GAMMA_CORRECTION 1
 
+#define RTX_TRUE 1
+#define RTX_FALSE 0
+#define RTX_EPS 1e-8
 
 #include <cstdint>
 
@@ -25,9 +28,6 @@ using f64 = double;
 using b8 = i8;
 using b32 = i32;
 
-#define RTX_TRUE 1
-#define RTX_FALSE 0
-
 
 template<typename val = f32>
 val generateRandom() {
@@ -44,6 +44,12 @@ val generateRandomInRange(val min, val max) {
 template<typename val = f32>
 val returnZero() {
     return 0.f;
+}
+
+template<typename val = f32>
+b8 epsilonEqual(val x) {
+    constexpr val epsilon{ (val)RTX_EPS };
+    return fabs(x) < epsilon ? RTX_TRUE : RTX_FALSE;
 }
 
 
