@@ -82,11 +82,11 @@ auto main() -> i32 {
     Camera camera{ cameraSpecification };
 
     HittableList world{
-        new HittableSphere{ point3{ 0.f, 0.f, -1.f}, 0.5f, new Metal{ color{ 0.8f, 0.8f, 0.8f } }},
-        new HittableSphere{ point3{ 1.5f, 0.f, -1.f}, 0.5f, new Lambertian{ color{ 0.7f, 0.3f, 0.3f } }},
-        new HittableSphere{ point3{ -1.5f, 0.f, -2.f}, 0.5f, new Lambertian{ color{ 0.2f, 0.3f, 0.7f } }},
-        new HittableSphere{ point3{ -1.f, -0.2f, -1.f}, 0.3f, new Metal{ color{ 0.8f, 0.6f, 0.2f } }},
-        new HittableSphere{ point3{ 0.f, -100.5f, -1.f}, 100.f, new Lambertian{ color{ 0.8f, 0.8f, 0.f } }}
+        new HittableSphere{ point3{  0.0f,    0.0f,  -1.f}, radius{  0.5f }, new Metal{ color{ 0.8f, 0.8f, 0.8f } }},
+        new HittableSphere{ point3{  1.5f,    0.0f,  -1.f}, radius{  0.5f }, new Lambertian{ color{ 0.7f, 0.3f, 0.3f } }},
+        new HittableSphere{ point3{ -1.5f,    0.0f,  -2.f}, radius{  0.5f }, new Lambertian{ color{ 0.2f, 0.3f, 0.7f } }},
+        new HittableSphere{ point3{ -1.0f,   -0.2f,  -1.f}, radius{  0.3f }, new Metal{ color{ 0.8f, 0.6f, 0.2f } }},
+        new HittableSphere{ point3{  0.0f, -100.5f,  -1.f}, radius{ 100.f }, new Lambertian{ color{ 0.8f, 0.8f, 0.f } }}
     };
 
     std::ofstream file;
