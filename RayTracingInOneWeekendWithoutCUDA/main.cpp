@@ -1,8 +1,4 @@
 
-#include <iostream>
-#include <fstream>
-#include <random>
-#include <limits>
 #include "vec3.h"
 #include "Ray.h"
 #include "defines.h"
@@ -48,6 +44,5 @@ auto main() -> i32 {
 
     image.free();
     world.clear();
-    std::cerr << "\nDone.\n";
 	return 0;
 }

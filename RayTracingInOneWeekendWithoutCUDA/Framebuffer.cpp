@@ -61,6 +61,7 @@ void Image::render(Camera* pCamera, HittableObject* pWorld) {
             k++;
         }
     }
+    std::cerr << "Done\n";
 }
 
 f32 Image::clamp(f32 x, f32 min, f32 max) const {
@@ -104,7 +105,7 @@ static void writePixelToFile(std::ostream& out, vec3 pixel) {
 
 void writeImageToFile(const char* outputPath, Image* pImage) {
     std::ofstream file;
-    file.open("output_filename.ppm");
+    file.open(outputPath);
     file << "P3\n" << pImage->width() << ' ' << pImage->height() << "\n255\n";
 
     for (i32 i = 0; i < pImage->pixelsCount(); i++) {
