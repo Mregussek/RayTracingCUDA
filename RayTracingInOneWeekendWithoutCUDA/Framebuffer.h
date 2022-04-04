@@ -14,22 +14,6 @@ static constexpr color white{ 1.f, 1.f, 1.f };
 static constexpr color blue{ 0.5f, 0.7f, 1.f };
 
 
-struct ImageSpecification {
-
-    i32 width{ 0 };
-    i32 height{ 0 };
-    f32 aspectRatio{ 0.f };
-    i32 samplesPerPixel{ 0 };
-    i32 recursionDepth{ 0 };
-
-};
-
-
-void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
-    std::cerr << "\rImage " << image.width << "x" << image.height << " Scanlines remaining : " << remaining << ' ' << std::flush;
-}
-
-
 /*
 * @brief Function linearly blends white and blue depending on the height of the y coordinate after scaling the ray
 * direction to unit length (-1.f, 1.f). Because we're looking at the y height after normalizing the vector, you'll
@@ -57,6 +41,22 @@ color colorRay(const Ray& ray, const HittableObject* pObject, i32 depth) {
 }
 
 
+struct ImageSpecification {
+
+    i32 width{ 0 };
+    i32 height{ 0 };
+    f32 aspectRatio{ 0.f };
+    i32 samplesPerPixel{ 0 };
+    i32 recursionDepth{ 0 };
+
+};
+
+
+void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
+    std::cerr << "\rImage " << image.width << "x" << image.height << " Scanlines remaining : " << remaining << ' ' << std::flush;
+}
+
+
 template<typename val = f32>
 val clamp(val x, val min, val max) {
     if (x < min) {
@@ -69,7 +69,14 @@ val clamp(val x, val min, val max) {
 }
 
 template<typename val = f32>
-void writeColor(std::ostream& out, vec3<val> pixel, i32 samplesPerPixel) {
+void writePixelToFile(std::ostream& out, vec3<val> pixel) {
+    out << (i32)(pixel.r) << ' '
+        << (i32)(pixel.g) << ' '
+        << (i32)(pixel.b) << '\n';
+}
+
+
+color applyPostProcessing(color pixel, i32 samplesPerPixel) {
     const f32 scale{ 1.f / (f32)samplesPerPixel };
     pixel *= scale;
 
@@ -77,9 +84,13 @@ void writeColor(std::ostream& out, vec3<val> pixel, i32 samplesPerPixel) {
         pixel = vector3::square(pixel);
     }
 
-    out << (i32)((val)255.999f * clamp(pixel.r, 0.f, 0.999f)) << ' '
-        << (i32)((val)255.999f * clamp(pixel.g, 0.f, 0.999f)) << ' '
-        << (i32)((val)255.999f * clamp(pixel.b, 0.f, 0.999f)) << '\n';
+    pixel = {
+        255.999f * clamp(pixel.r, 0.f, 0.999f),
+        255.999f * clamp(pixel.g, 0.f, 0.999f),
+        255.999f * clamp(pixel.b, 0.f, 0.999f)
+    };
+
+    return pixel;
 }
 
 
@@ -99,7 +110,10 @@ void render(ImageSpecification image, Camera* pCamera, HittableObject* pWorld) {
                 const Ray ray{ pCamera->origin(), pCamera->calculateRayDirection(u, v) };
                 pixel += colorRay(ray, pWorld, image.recursionDepth);
             }
-            writeColor(file, pixel, image.samplesPerPixel);
+            
+            pixel = applyPostProcessing(pixel, image.samplesPerPixel);
+
+            writePixelToFile(file, pixel);
         }
     }
     file.close();
