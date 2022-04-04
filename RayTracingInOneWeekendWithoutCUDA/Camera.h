@@ -15,7 +15,7 @@ struct CameraSpecification {
     point3 origin{ 0.f, 0.f, 0.f };
     
     CameraSpecification() = default;
-    constexpr CameraSpecification(f32 _height, f32 _width, f32 _focalLength, point3 _origin) :
+    CameraSpecification(f32 _height, f32 _width, f32 _focalLength, point3 _origin) :
         height(_height),
         width(_width),
         focalLength(_focalLength),
@@ -28,15 +28,15 @@ struct CameraSpecification {
 class Camera {
 public:
 
-    Camera() = default;
-    Camera(CameraSpecification _specs) :
-        specs(_specs),
-        horizontal(specs.width, 0.f, 0.f),
-        vertical(0.f, specs.height, 0.f),
-        lowerLeftCorner(calculateLowerLeftCorner())
-    { }
+    void initialize(CameraSpecification _specs) {
+        specs = _specs;
+        horizontal = { specs.width, 0.f, 0.f };
+        vertical = { 0.f, specs.height, 0.f };
+        lowerLeftCorner = calculateLowerLeftCorner();
 
-    constexpr point3 origin() const {
+    }
+
+    point3 origin() const {
         return specs.origin;
     }
 
@@ -47,7 +47,7 @@ public:
     * @param v value at y-axis, where ray should point to
     * @return calculated ray direction
     */
-    constexpr vector3 calculateRayDirection(f32 u, f32 v) const {
+    vector3 calculateRayDirection(f32 u, f32 v) const {
         return lowerLeftCorner + u * horizontal + v * vertical - specs.origin;
     }
 
@@ -57,7 +57,7 @@ private:
     * @brief Calculates Bottom Left Corner at the image. Needs origin, horizontal, vertical and focalLength.
     * @return Calculated point3, which says, where bottom left corner is.
     */
-    constexpr point3 calculateLowerLeftCorner() {
+    point3 calculateLowerLeftCorner() {
         return specs.origin - horizontal / 2.f - vertical / 2.f + point3(0.f, 0.f, -specs.focalLength);
     }
 

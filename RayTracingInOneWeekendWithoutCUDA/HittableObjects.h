@@ -20,8 +20,8 @@ struct HitSpecification {
 	b8 frontFace{ 0 };
 	Material* pMaterial{ nullptr };
 
-	constexpr HitSpecification() = default;
-	constexpr HitSpecification(point3 _p, vector3 _n, f32 _t) :
+	HitSpecification() = default;
+	HitSpecification(point3 _p, vector3 _n, f32 _t) :
 		point(_p),
 		normal(_n),
 		t(_t)

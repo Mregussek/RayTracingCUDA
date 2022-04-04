@@ -8,10 +8,11 @@
 #include "HittableObjects.h"
 #include "Camera.h"
 #include "Ray.h"
+#include "Platform.h"
 
 
-static constexpr color white{ 1.f, 1.f, 1.f };
-static constexpr color blue{ 0.5f, 0.7f, 1.f };
+static const color white{ 1.f, 1.f, 1.f };
+static const color blue{ 0.5f, 0.7f, 1.f };
 
 
 /*
@@ -57,7 +58,7 @@ public:
 
     void initialize(ImageSpecification _imageSpecs) {
         imageSpecs = _imageSpecs;
-        multisampleFunc = imageSpecs.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
+        multisampleFunc = imageSpecs.samplesPerPixel == 1 ? &returnZero : &generateRandom;
         countPixels = imageSpecs.width * imageSpecs.height;
         if (!pPixels) {
             pPixels = new color[countPixels];
@@ -108,8 +109,7 @@ public:
 
 private:
 
-    template<typename val = f32>
-    val clamp(val x, val min, val max) {
+    f32 clamp(f32 x, f32 min, f32 max) {
         if (x < min) {
             return min;
         }
@@ -149,8 +149,7 @@ private:
 };
 
 
-template<typename val = f32>
-void writePixelToFile(std::ostream& out, vec3<val> pixel) {
+void writePixelToFile(std::ostream& out, vec3 pixel) {
     out << (i32)(pixel.r) << ' '
         << (i32)(pixel.g) << ' '
         << (i32)(pixel.b) << '\n';

@@ -20,7 +20,7 @@ public:
 class Lambertian : public Material {
 public:
 
-	constexpr Lambertian(color _albedo) :
+	Lambertian(color _albedo) :
 		albedo(_albedo)
 	{ }
 
@@ -42,7 +42,7 @@ private:
 class Metal : public Material {
 public:
 
-	constexpr Metal(color _albedo) :
+	Metal(color _albedo) :
 		albedo(_albedo)
 	{ }
 

@@ -29,7 +29,8 @@ auto main() -> i32 {
     cameraSpecification.focalLength = 1.f;
     cameraSpecification.origin = point3{ 0.f, 0.f, 0.f };
 
-    Camera camera{ cameraSpecification };
+    Camera camera;
+    camera.initialize(cameraSpecification);
 
     HittableList world{
         new HittableSphere{ point3{  0.0f,    0.0f,  -1.f}, radius{  0.5f }, new Metal{ color{ 0.8f, 0.8f, 0.8f } }},

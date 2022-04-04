@@ -4,12 +4,25 @@
 
 
 #define ENABLE_GAMMA_CORRECTION 1
+#define USE_GPU_CUDA_COMPUTING 0
+
+#if USE_GPU_CUDA_COMPUTING
+#define RTX_HOST __host__
+#define RTX_DEVICE __device__
+#define RTX_GLOBAL __global__
+#else
+#define RTX_HOST
+#define RTX_DEVICE
+#define RTX_GLOBAL
+#endif
 
 #define RTX_TRUE 1
 #define RTX_FALSE 0
 #define RTX_EPS 1e-8
 
+
 #include <cstdint>
+#include <limits>
 
 
 using i8 = int_fast8_t;
@@ -28,35 +41,9 @@ using f64 = double;
 using b8 = i8;
 using b32 = i32;
 
-
 using radius = f32;
 
-
-static constexpr f32 infinity{ std::numeric_limits<f32>::infinity() };
-
-
-template<typename val = f32>
-val generateRandom() {
-    static std::uniform_real_distribution<val> distribution((val)0.0, (val)1.0);
-    static std::mt19937 generator;
-    return (val)distribution(generator);
-}
-
-template<typename val = f32>
-val generateRandomInRange(val min, val max) {
-    return min + (max - min) * generateRandom();
-}
-
-template<typename val = f32>
-val returnZero() {
-    return 0.f;
-}
-
-template<typename val = f32>
-b8 epsilonEqual(val x) {
-    constexpr val epsilon{ (val)RTX_EPS };
-    return fabs(x) < epsilon ? RTX_TRUE : RTX_FALSE;
-}
+static const f32 infinity{ std::numeric_limits<f32>::infinity() };
 
 
 #endif

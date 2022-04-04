@@ -140,7 +140,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="HittableSphere.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -150,6 +153,7 @@
     <ClInclude Include="HittableObjects.h" />
     <ClInclude Include="HittableSphere.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="Platform.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>
