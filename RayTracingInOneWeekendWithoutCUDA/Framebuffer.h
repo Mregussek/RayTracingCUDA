@@ -52,21 +52,102 @@ struct ImageSpecification {
 };
 
 
-void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
-    std::cerr << "\rImage " << image.width << "x" << image.height << " Scanlines remaining : " << remaining << ' ' << std::flush;
-}
+class Image {
+public:
+
+    void initialize(ImageSpecification _imageSpecs) {
+        imageSpecs = _imageSpecs;
+        multisampleFunc = imageSpecs.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
+        countPixels = imageSpecs.width * imageSpecs.height;
+        if (!pPixels) {
+            pPixels = new color[countPixels];
+        }
+    }
+
+    void free() {
+        if (pPixels) {
+            delete[] pPixels;
+        }
+    }
+
+    void render(Camera* pCamera, HittableObject* pWorld) {
+        i32 k = 0;
+        for (i32 j = imageSpecs.height - 1; j >= 0; j--) {
+            printRemainingScanlinesWithInfo(imageSpecs, j);
+            for (i32 i = 0; i < imageSpecs.width; i++) {
+                color pixel{ 0.f, 0.f, 0.f };
+                for (i32 s = 0; s < imageSpecs.samplesPerPixel; s++) {
+                    const f32 u = ((f32)i + multisampleFunc()) / ((f32)imageSpecs.width - 1.f);
+                    const f32 v = ((f32)j + multisampleFunc()) / ((f32)imageSpecs.height - 1.f);
+                    const Ray ray{ pCamera->origin(), pCamera->calculateRayDirection(u, v) };
+                    pixel += colorRay(ray, pWorld, imageSpecs.recursionDepth);
+                }
+
+                pixel = applyPostProcessing(pixel, imageSpecs.samplesPerPixel);
+                pPixels[k] = pixel;
+                k++;
+            }
+        }
+    }
+
+    i32 width() const {
+        return imageSpecs.width;
+    }
+
+    i32 height() const {
+        return imageSpecs.height;
+    }
+
+    color pixel(i32 i) const {
+        return pPixels[i];
+    }
+
+    i32 pixelsCount() const {
+        return countPixels;
+    }
+
+private:
+
+    template<typename val = f32>
+    val clamp(val x, val min, val max) {
+        if (x < min) {
+            return min;
+        }
+        if (x > max) {
+            return max;
+        }
+        return x;
+    }
+
+    color applyPostProcessing(color pixel, i32 samplesPerPixel) {
+        const f32 scale{ 1.f / (f32)samplesPerPixel };
+        pixel *= scale;
+
+        if constexpr (ENABLE_GAMMA_CORRECTION) {
+            pixel = vector3::square(pixel);
+        }
+
+        pixel = {
+            255.999f * clamp(pixel.r, 0.f, 0.999f),
+            255.999f * clamp(pixel.g, 0.f, 0.999f),
+            255.999f * clamp(pixel.b, 0.f, 0.999f)
+        };
+
+        return pixel;
+    }
+
+    void printRemainingScanlinesWithInfo(ImageSpecification image, i32 remaining) {
+        std::cerr << "\rImage " << image.width << "x" << image.height << " Scanlines remaining : " << remaining << ' ' << std::flush;
+    }
 
 
-template<typename val = f32>
-val clamp(val x, val min, val max) {
-    if (x < min) {
-        return min;
-    }
-    if (x > max) {
-        return max;
-    }
-    return x;
-}
+    ImageSpecification imageSpecs{};
+    color* pPixels{ nullptr };
+    f32(*multisampleFunc)() { nullptr };
+    i32 countPixels{ 0 };
+
+};
+
 
 template<typename val = f32>
 void writePixelToFile(std::ostream& out, vec3<val> pixel) {
@@ -76,47 +157,17 @@ void writePixelToFile(std::ostream& out, vec3<val> pixel) {
 }
 
 
-color applyPostProcessing(color pixel, i32 samplesPerPixel) {
-    const f32 scale{ 1.f / (f32)samplesPerPixel };
-    pixel *= scale;
-
-    if constexpr (ENABLE_GAMMA_CORRECTION) {
-        pixel = vector3::square(pixel);
-    }
-
-    pixel = {
-        255.999f * clamp(pixel.r, 0.f, 0.999f),
-        255.999f * clamp(pixel.g, 0.f, 0.999f),
-        255.999f * clamp(pixel.b, 0.f, 0.999f)
-    };
-
-    return pixel;
-}
-
-
-void render(ImageSpecification image, Camera* pCamera, HittableObject* pWorld) {
-    f32(*multisampleFunc)() = image.samplesPerPixel == 1 ? &returnZero<f32> : &generateRandom<f32>;
-
+void writeImageToFile(const char* outputPath, Image* pImage) {
     std::ofstream file;
     file.open("output_filename.ppm");
-    file << "P3\n" << image.width << ' ' << image.height << "\n255\n";
-    for (i32 j = image.height - 1; j >= 0; j--) {
-        printRemainingScanlinesWithInfo(image, j);
-        for (i32 i = 0; i < image.width; i++) {
-            color pixel{ 0.f, 0.f, 0.f };
-            for (i32 s = 0; s < image.samplesPerPixel; s++) {
-                const f32 u = ((f32)i + multisampleFunc()) / ((f32)image.width - 1.f);
-                const f32 v = ((f32)j + multisampleFunc()) / ((f32)image.height - 1.f);
-                const Ray ray{ pCamera->origin(), pCamera->calculateRayDirection(u, v) };
-                pixel += colorRay(ray, pWorld, image.recursionDepth);
-            }
-            
-            pixel = applyPostProcessing(pixel, image.samplesPerPixel);
+    file << "P3\n" << pImage->width() << ' ' << pImage->height() << "\n255\n";
 
-            writePixelToFile(file, pixel);
-        }
+    for (i32 i = 0; i < pImage->pixelsCount(); i++) {
+        writePixelToFile(file, pImage->pixel(i));
     }
+
     file.close();
+
 }
 
 

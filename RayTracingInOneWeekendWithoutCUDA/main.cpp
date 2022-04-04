@@ -16,19 +16,19 @@
 
 auto main() -> i32 {
 
-    ImageSpecification image{};
-    image.width = 720;
-    image.height = 405;
-    image.aspectRatio = (f32)image.width / (f32)image.height;
-    image.samplesPerPixel = 25;
-    image.recursionDepth = 100;
-    
+    ImageSpecification imageSpecs{};
+    imageSpecs.width = 720;
+    imageSpecs.height = 405;
+    imageSpecs.aspectRatio = (f32)imageSpecs.width / (f32)imageSpecs.height;
+    imageSpecs.samplesPerPixel = 25;
+    imageSpecs.recursionDepth = 100;
+
     CameraSpecification cameraSpecification{};
     cameraSpecification.height = 2.f;
-    cameraSpecification.width = cameraSpecification.height * image.aspectRatio;
+    cameraSpecification.width = cameraSpecification.height * imageSpecs.aspectRatio;
     cameraSpecification.focalLength = 1.f;
     cameraSpecification.origin = point3{ 0.f, 0.f, 0.f };
-    
+
     Camera camera{ cameraSpecification };
 
     HittableList world{
@@ -39,8 +39,13 @@ auto main() -> i32 {
         new HittableSphere{ point3{  0.0f, -100.5f,  -1.f}, radius{ 100.f }, new Lambertian{ color{ 0.8f, 0.8f, 0.f } }}
     };
 
-    render(image, &camera, &world);
+    Image image;
+    image.initialize(imageSpecs);
 
+    image.render(&camera, &world);
+    writeImageToFile("output_image.ppm", &image);
+
+    image.free();
     world.clear();
     std::cerr << "\nDone.\n";
 	return 0;
