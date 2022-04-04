@@ -32,6 +32,9 @@ using b32 = i32;
 using radius = f32;
 
 
+static constexpr f32 infinity{ std::numeric_limits<f32>::infinity() };
+
+
 template<typename val = f32>
 val generateRandom() {
     static std::uniform_real_distribution<val> distribution((val)0.0, (val)1.0);

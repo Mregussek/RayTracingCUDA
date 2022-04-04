@@ -143,30 +143,5 @@ constexpr vec3<val> operator/(vec3<val> v, val t) {
     return (1 / t) * v;
 }
 
-template<typename val = f32>
-val clamp(val x, val min, val max) {
-    if (x < min) {
-        return min;
-    }
-    if (x > max) {
-        return max;
-    }
-    return x;
-}
-
-template<typename val = f32>
-void writeColor(std::ostream& out, vec3<val> pixel, i32 samplesPerPixel) {
-    const f32 scale{ 1.f / (f32)samplesPerPixel };
-    pixel *= scale;
-
-    if constexpr (ENABLE_GAMMA_CORRECTION) {
-        pixel = vector3::square(pixel);
-    }
-
-    out << (i32)((val)255.999f * clamp(pixel.r, 0.f, 0.999f)) << ' '
-        << (i32)((val)255.999f * clamp(pixel.g, 0.f, 0.999f)) << ' '
-        << (i32)((val)255.999f * clamp(pixel.b, 0.f, 0.999f)) << '\n';
-}
-
 
 #endif
