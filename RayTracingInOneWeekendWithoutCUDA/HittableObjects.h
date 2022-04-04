@@ -35,7 +35,7 @@ struct HitInterval {
 	f32 max{ 0.f };
 	f32 min{ 0.f };
 
-	constexpr HitInterval(f32 _min, f32 _max) :
+	HitInterval(f32 _min, f32 _max) :
 		max(_max),
 		min(_min)
 	{ }

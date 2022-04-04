@@ -9,6 +9,7 @@
 
 
 struct Ray;
+class Material;
 
 
 class HittableSphere : public HittableObject {
