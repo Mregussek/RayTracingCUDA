@@ -24,6 +24,7 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <random>
 #include <cstdint>

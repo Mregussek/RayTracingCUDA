@@ -21,13 +21,34 @@ __global__ void render(vec3* fb, int max_x, int max_y) {
     int j = threadIdx.y + blockIdx.y * blockDim.y;
     if ((i >= max_x) || (j >= max_y)) return;
     int pixel_index = j * max_x + i;
-    fb[pixel_index] = vec3(float(i) / max_x, float(j) / max_y, 0.2f);
+    fb[pixel_index] = 255.99f * vec3(float(i) / max_x, float(j) / max_y, 0.2f);
+}
+
+
+static void writePixelToFile(std::ostream& out, vec3 pixel) {
+    out << (i32)(pixel.r) << ' '
+        << (i32)(pixel.g) << ' '
+        << (i32)(pixel.b) << '\n';
+}
+
+
+void writeImageToFile(const char* outputPath, i32 width, i32 height, i32 pixelsCount,
+                      vec3* pImage) {
+    std::ofstream file;
+    file.open(outputPath);
+    file << "P3\n" << width << ' ' << height << "\n255\n";
+
+    for (i32 i = 0; i < pixelsCount; i++) {
+        writePixelToFile(file, pImage[i]);
+    }
+
+    file.close();
 }
 
 
 auto main() -> i32 {
-    int nx = 1200;
-    int ny = 600;
+    int nx = 720;
+    int ny = 405;
     int tx = 8;
     int ty = 8;
 
@@ -53,17 +74,7 @@ auto main() -> i32 {
     double timer_seconds = ((double)(stop - start)) / CLOCKS_PER_SEC;
     std::cerr << "took " << timer_seconds << " seconds.\n";
 
-    // Output FB as Image
-    std::cout << "P3\n" << nx << " " << ny << "\n255\n";
-    for (int j = ny - 1; j >= 0; j--) {
-        for (int i = 0; i < nx; i++) {
-            size_t pixel_index = j * nx + i;
-            int ir = int(255.99 * fb[pixel_index].x);
-            int ig = int(255.99 * fb[pixel_index].y);
-            int ib = int(255.99 * fb[pixel_index].z);
-            std::cout << ir << " " << ig << " " << ib << "\n";
-        }
-    }
+    writeImageToFile("output_image.ppm", nx, ny, num_pixels, fb);
 
     checkCudaErrors(cudaFree(fb));
 }
