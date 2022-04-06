@@ -82,7 +82,9 @@
     <CudaCompile Include="main.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Blocks.h" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>

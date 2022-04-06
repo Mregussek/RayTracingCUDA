@@ -33,6 +33,11 @@ struct vec3 {
 };
 
 
+using vector3 = vec3;
+using point3 = vec3;
+using color = vec3;
+
+
 RTX_HOST RTX_DEVICE inline vec3 operator+(vec3 left, vec3 right) {
     return left.add(right);
 }
@@ -180,11 +185,6 @@ template<typename T> RTX_HOST RTX_DEVICE inline vec3 vec3::divide(T v) const {
         return { x / v.x, y / v.y, z / v.z };
     }
 }
-
-
-using vector3 = vec3;
-using point3 = vec3;
-using color = vec3;
 
 
 std::ostream& operator<<(std::ostream& out, vec3 v) {
