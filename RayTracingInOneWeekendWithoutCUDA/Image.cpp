@@ -1,5 +1,5 @@
 
-#include "Framebuffer.h"
+#include "Image.h"
 #include <fstream>
 #include "HittableObjects.h"
 #include "Camera.h"

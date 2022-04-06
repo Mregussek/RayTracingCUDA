@@ -141,9 +141,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="HittableList.cpp" />
     <ClCompile Include="HittableSphere.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="vec3.cpp" />
@@ -151,10 +151,10 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="defines.h" />
-    <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="HittableList.h" />
     <ClInclude Include="HittableObjects.h" />
     <ClInclude Include="HittableSphere.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="Ray.h" />

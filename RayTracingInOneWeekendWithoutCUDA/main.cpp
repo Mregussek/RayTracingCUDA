@@ -7,7 +7,7 @@
 #include "HittableSphere.h"
 #include "Material.h"
 #include "Camera.h"
-#include "Framebuffer.h"
+#include "Image.h"
 
 
 auto main() -> i32 {
