@@ -4,6 +4,7 @@
 #include "vec3.h"
 #include "Image.h"
 #include "Blocks.h"
+#include "Timer.h"
 
 
 __global__ void render(color* pPixels, i32 imageWidth, i32 imageHeight) {
@@ -41,15 +42,14 @@ auto main() -> i32 {
 
     printCrucialInfoAboutRendering(&image, &blocks);
 
-    clock_t start, stop;
-    start = clock();
-    // Render our buffer
+    Timer<TimerType::MICROSECONDS> timer;
+    timer.start();
+
     render<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getPixels(), image.getWidth(), image.getHeight());
     CUDA_CHECK(cudaGetLastError());
     CUDA_CHECK(cudaDeviceSynchronize());
-    stop = clock();
-    double timer_seconds = ((double)(stop - start)) / CLOCKS_PER_SEC;
-    std::cerr << "took " << timer_seconds << " seconds.\n";
+    
+    timer.stop();
 
     writeImageToFile("output_image.ppm", &image);
 

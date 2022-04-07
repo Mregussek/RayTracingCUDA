@@ -86,6 +86,7 @@
     <ClInclude Include="defines.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
