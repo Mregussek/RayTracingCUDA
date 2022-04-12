@@ -61,11 +61,14 @@ static void writePixelToFile(std::ostream& out, vec3 pixel) {
 
 
 void writeImageToFile(const char* outputPath, Image* pImage) {
+    const u32 width{ pImage->getWidth() };
+    const u32 height{ pImage->getHeight() };
+
     std::ofstream file;
     file.open(outputPath);
-    file << "P3\n" << pImage->getWidth() << ' ' << pImage->getHeight() << "\n255\n";
-     
-    for (i32 i = 0; i < pImage->getCount(); i++) {
+    file << "P3\n" << width << ' ' << height << "\n255\n";
+
+    for (i32 i = pImage->getCount() - 1; i >= 0; i--) {
         writePixelToFile(file, pImage->getPixels()[i]);
     }
 
