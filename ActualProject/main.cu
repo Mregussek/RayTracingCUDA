@@ -54,6 +54,31 @@ RTX_DEVICE vec3 colorRay(const Ray& ray, HittableObject** pWorld, curandState* p
 }
 
 
+RTX_DEVICE f32 clamp(f32 x, f32 min, f32 max) {
+    if (x < min) {
+        return min;
+    }
+    if (x > max) {
+        return max;
+    }
+    return x;
+}
+
+
+RTX_DEVICE color applyPostProcessing(color pixel, i32 samplesPerPixel) {
+    const f32 scale{ 1.f / (f32)samplesPerPixel };
+    color sampledPixel{ pixel * scale };
+    if constexpr (ENABLE_GAMMA_CORRECTION) {
+        sampledPixel = vec3::square(sampledPixel);
+    }
+    return {
+        255.999f * clamp(sampledPixel.r, 0.f, 0.999f),
+        255.999f * clamp(sampledPixel.g, 0.f, 0.999f),
+        255.999f * clamp(sampledPixel.b, 0.f, 0.999f)
+    };
+}
+
+
 RTX_GLOBAL void render(color* pPixels, u32 imageWidth, u32 imageHeight, u32 samples, i32 recursionDepth,
                        Camera** pCamera, HittableObject** pWorld, curandState* pRandState) {
     const u32 i{ threadIdx.x + blockIdx.x * blockDim.x };
@@ -62,7 +87,7 @@ RTX_GLOBAL void render(color* pPixels, u32 imageWidth, u32 imageHeight, u32 samp
     const u32 index{ j * imageWidth + i };
 
     curandState localRandState = pRandState[index];
-    vec3 localPixel{ 0.f, 0.f, 0.f };
+    color localPixel{ 0.f, 0.f, 0.f };
 
     for (u32 s = 0; s < samples; s++) {
         const f32 u{ ((f32)i + curand_uniform(&localRandState)) / (f32)imageWidth };
@@ -71,9 +96,8 @@ RTX_GLOBAL void render(color* pPixels, u32 imageWidth, u32 imageHeight, u32 samp
         localPixel = localPixel + colorRay(ray, pWorld, &localRandState, recursionDepth);
     }
     pRandState[index] = localRandState;
-    localPixel = localPixel / (f32)samples;
-    localPixel = vec3::square(localPixel);
-    pPixels[index] = localPixel * 255.99f;
+
+    pPixels[index] = applyPostProcessing(localPixel, samples);
 }
 
 
@@ -84,14 +108,15 @@ RTX_GLOBAL void renderClose(Camera** pCamera) {
 }
 
 
-RTX_GLOBAL void worldCreate(HittableObject** pList, HittableObject** pWorld, Camera** pCamera, f32 aspectRatio) {
+
+RTX_GLOBAL void worldCreate(HittableObject** pList, HittableObject** pWorld, Camera** pCamera, f32 aspectRatio, u32 listCount) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         *(pList + 0) = new HittableSphere{ point3{  0.0f,    0.0f,  -1.f}, radius{  0.5f }, new Metal{      color{ 0.8f, 0.8f, 0.8f } } };
         *(pList + 1) = new HittableSphere{ point3{  1.5f,    0.0f,  -1.f}, radius{  0.5f }, new Lambertian{ color{ 0.7f, 0.3f, 0.3f } } };
         *(pList + 2) = new HittableSphere{ point3{ -1.5f,    0.0f,  -2.f}, radius{  0.5f }, new Lambertian{ color{ 0.2f, 0.3f, 0.7f } } };
         *(pList + 3) = new HittableSphere{ point3{ -1.0f,   -0.2f,  -1.f}, radius{  0.3f }, new Metal{      color{ 0.8f, 0.6f, 0.2f } } };
         *(pList + 4) = new HittableSphere{ point3{  0.0f, -100.5f,  -1.f}, radius{ 100.f }, new Lambertian{ color{ 0.8f, 0.8f, 0.f  } } };
-        *pWorld = new HittableList(pList, 5);
+        *pWorld = new HittableList(pList, listCount);
 
         CameraSpecification camSpecs;
         camSpecs.height = 2.f;
@@ -146,7 +171,7 @@ auto main() -> i32 {
     curandState* pRandState;
     CUDA_CHECK( cudaMalloc((void**)&pRandState, image.getCount() * sizeof(curandState)));
 
-    u32 listCount{ 5 };
+    const u32 listCount{ 5 };
     HittableObject** pList;
     CUDA_CHECK( cudaMalloc((void**)&pList, listCount * sizeof(HittableObject*)) );
     HittableObject** pWorld;
@@ -154,7 +179,7 @@ auto main() -> i32 {
     Camera** pCamera;
     CUDA_CHECK( cudaMalloc((void**)&pCamera, sizeof(Camera*)) );
 
-    RTX_CALL_KERNEL_AND_VALIDATE( worldCreate<<<1, 1>>>(pList, pWorld, pCamera, image.getAspectRatio()) );
+    RTX_CALL_KERNEL_AND_VALIDATE( worldCreate<<<1, 1>>>(pList, pWorld, pCamera, image.getAspectRatio(), listCount) );
     RTX_CALL_KERNEL_AND_VALIDATE( 
         renderInit<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getWidth(), image.getHeight(), pRandState)
     );

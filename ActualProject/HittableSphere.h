@@ -10,7 +10,7 @@
 
 
 struct Ray;
-struct Material;
+class Material;
 
 
 class HittableSphere : public HittableObject {
@@ -72,11 +72,6 @@ RTX_DEVICE b8 HittableSphere::hit(const Ray& ray, HitInterval interval, HitSpeci
 	hitSpecs->frontFace = vector3::dot(ray.direction, outwardNormal) < 0 ? RTX_TRUE : RTX_FALSE;
 	hitSpecs->normal = hitSpecs->frontFace ? outwardNormal : (-1.f * outwardNormal);
 	hitSpecs->pMaterial = pMaterial;
-	return RTX_TRUE;
-}
-
-RTX_DEVICE b8 HittableSphere::deleteMaterial() {
-	delete pMaterial;
 	return RTX_TRUE;
 }
 

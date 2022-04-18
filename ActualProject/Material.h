@@ -12,7 +12,8 @@
 class Material {
 public:
 
-	RTX_DEVICE virtual b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation, Ray* pScattered, curandState* pRandState) { return RTX_FALSE; }
+	RTX_DEVICE virtual b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation,
+								  Ray* pScattered, curandState* pRandState) const { return RTX_FALSE; }
 
 };
 
@@ -24,9 +25,9 @@ public:
 		albedo(_albedo)
 	{ }
 
-	RTX_DEVICE b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation, Ray* pScattered, curandState* pRandState) override {
+	RTX_DEVICE b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation, Ray* pScattered,
+						  curandState* pRandState) const override {
 		const vector3 scatterDirection{ hitSpecs.normal + vector3::normalize(HittableSphere::isRandomInUnitSphere(pRandState)) };
-		// Catch degenerate scatter direction
 		*pScattered = Ray(hitSpecs.point, vector3::nearZero(scatterDirection) ? hitSpecs.normal : scatterDirection);
 		*pAttenuation = albedo;
 		return RTX_TRUE;
@@ -46,7 +47,8 @@ public:
 		albedo(_albedo)
 	{ }
 
-	RTX_DEVICE b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation, Ray* pScattered, curandState* pRandState) override {
+	RTX_DEVICE b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation, Ray* pScattered,
+						  curandState* pRandState) const override {
 		const vector3 reflected{ vector3::reflect(vector3::normalize(ray.direction), hitSpecs.normal) };
 		*pScattered = Ray(hitSpecs.point, reflected);
 		*pAttenuation = albedo;
@@ -58,6 +60,12 @@ private:
 	color albedo{ 0.f, 0.f, 0.f };
 
 };
+
+
+RTX_DEVICE b8 HittableSphere::deleteMaterial() {
+	delete pMaterial;
+	return RTX_TRUE;
+}
 
 
 #endif

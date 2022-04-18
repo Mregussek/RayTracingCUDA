@@ -24,7 +24,6 @@ public:
     void initialize(ImageSpecification _imageSpecs) {
         imageSpecs = _imageSpecs;
         aspectRatio = (f32)imageSpecs.width / (f32)imageSpecs.height;
-        multisampleFunc = imageSpecs.samplesPerPixel == 1 ? &returnZero : &generateRandom;
         countPixels = imageSpecs.width * imageSpecs.height;
         imageSizeof = countPixels * sizeof(color);
         CUDA_CHECK( cudaMallocManaged((void**)&pPixels, imageSizeof) );
@@ -46,7 +45,6 @@ public:
 private:
 
     ImageSpecification imageSpecs;
-    f32(*multisampleFunc)(curandState*) { nullptr };
     color* pPixels;
     f32 aspectRatio{ 0.f };
     u32 countPixels{ 0 };
@@ -63,15 +61,18 @@ static void writePixelToFile(std::ostream& out, vec3 pixel) {
 
 
 void writeImageToFile(const char* outputPath, Image* pImage) {
-    const u32 width{ pImage->getWidth() };
-    const u32 height{ pImage->getHeight() };
+    const i32 width{ (i32)pImage->getWidth() };
+    const i32 height{ (i32)pImage->getHeight() };
 
     std::ofstream file;
     file.open(outputPath);
     file << "P3\n" << width << ' ' << height << "\n255\n";
 
-    for (i32 i = pImage->getCount() - 1; i >= 0; i--) {
-        writePixelToFile(file, pImage->getPixels()[i]);
+    for (i32 j = (i32)height - 1; j >= 0; j--) {
+        for (i32 i = 0; i < width; i++) {
+            const i32 index{ j * width + i };
+            writePixelToFile(file, pImage->getPixels()[index]);
+        }
     }
 
     file.close();
