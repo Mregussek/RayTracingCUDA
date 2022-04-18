@@ -7,8 +7,32 @@
 
 
 enum class TimerType {
-	MICROSECONDS
+	MICROSECONDS, MILISECONDS
 };
+
+
+template <typename T>
+struct TimeInfo {
+	T duration;
+	std::string str;
+
+	TimeInfo(T _dur, std::string _str) :
+		duration(_dur),
+		str(_str)
+	{ }
+
+};
+
+
+template<TimerType T>
+static auto getProperTimeType(std::chrono::steady_clock::time_point start, std::chrono::steady_clock::time_point stop) {
+	if constexpr (T == TimerType::MICROSECONDS) {
+		return TimeInfo<std::chrono::microseconds>(std::chrono::duration_cast<std::chrono::microseconds>(stop - start), "microseconds");
+	}
+	else if constexpr (T == TimerType::MILISECONDS) {
+		return TimeInfo<std::chrono::milliseconds>(std::chrono::duration_cast<std::chrono::milliseconds>(stop - start), "miliseconds");
+	}
+}
 
 
 template<TimerType T>
@@ -21,17 +45,12 @@ public:
 
 	u64 stop(b8 printValue = true) {
 		stopTimepoint = std::chrono::high_resolution_clock::now();
-		if constexpr (T == TimerType::MICROSECONDS) {
-			const auto duration =
-				std::chrono::duration_cast<std::chrono::microseconds>(stopTimepoint - startTimepoint);
-			const u64 microseconds{ (u64)duration.count() };
-			if (printValue) {
-				std::cerr << "Timer was on for " << microseconds << " microseconds\n";
-			}
-			return microseconds;
+		auto timerInfo = getProperTimeType<T>(startTimepoint, stopTimepoint);
+		const u64 count{ (u64)timerInfo.duration.count() };
+		if (printValue) {
+			std::cerr << "Timer was on for " << count << " " << timerInfo.str << "\n";
 		}
-		std::cerr << "Given wrong TimerType! Could not calculate time!\n";
-		return 0;
+		return count;
 	}
 
 private:

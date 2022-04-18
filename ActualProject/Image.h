@@ -40,12 +40,13 @@ public:
     u32 getSizeof() const { return imageSizeof; }
     u32 getCount() const { return countPixels; }
     i32 getSamples() const { return imageSpecs.samplesPerPixel; }
+    i32 getDepth() const { return imageSpecs.recursionDepth; }
     color* getPixels() { return pPixels; }
 
 private:
 
     ImageSpecification imageSpecs;
-    f32(*multisampleFunc)(u32) { nullptr };
+    f32(*multisampleFunc)(curandState*) { nullptr };
     color* pPixels;
     f32 aspectRatio{ 0.f };
     u32 countPixels{ 0 };

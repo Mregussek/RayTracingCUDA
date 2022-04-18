@@ -21,7 +21,7 @@ public:
 
 	RTX_DEVICE b8 deleteMaterial();
 
-	RTX_DEVICE static vector3 isRandomInUnitSphere(u32 seed);
+	RTX_DEVICE static vector3 isRandomInUnitSphere(curandState* pRandState);
 
 private:
 
@@ -71,14 +71,12 @@ RTX_DEVICE b8 HittableSphere::hit(const Ray& ray, HitInterval interval, HitSpeci
 	return RTX_TRUE;
 }
 
-RTX_DEVICE vector3 HittableSphere::isRandomInUnitSphere(u32 seed) {
-	while (true) {
-		const vector3 r{ vector3::random(seed, -1.f, 1.f) };
-		if (vector3::dot(r, r) >= 1) {
-			continue;
-		}
-		return r;
-	}
+RTX_DEVICE vector3 HittableSphere::isRandomInUnitSphere(curandState* pRandState) {
+	vec3 p;
+	do {
+		p = 2.f * vec3::random(pRandState) - 1.f;
+	} while (vec3::dot(p, p) >= 1.0f);
+	return p;
 }
 
 

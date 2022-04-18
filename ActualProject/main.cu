@@ -21,22 +21,34 @@ RTX_GLOBAL void renderInit(u32 imageWidth, u32 imageHeight, curandState* pRandSt
 }
 
 
-RTX_DEVICE vec3 colorRay(const Ray& ray, HittableObject** pWorld) {
+RTX_DEVICE vec3 colorRay(const Ray& ray, HittableObject** pWorld, curandState* pRandState, i32 recursionDepth) {
     const color white{ 1.f, 1.f, 1.f };
     const color blue{ 0.5f, 0.7f, 1.f };
 
-    HitSpecification hitSpecs;
-    if ((*pWorld)->hit(ray, { 0.f, FLT_MAX }, &hitSpecs)) {
-        return 0.5f * (hitSpecs.normal + 1.f);
+    Ray currentRay{ ray };
+    f32 currentAttenuation{ 1.f };
+
+    for (i32 i = 0; i < recursionDepth; i++) {
+        HitSpecification hitSpecs;
+        if ((*pWorld)->hit(currentRay, { 0.001f, FLT_MAX }, &hitSpecs)) {
+            const vec3 target{ hitSpecs.point + hitSpecs.normal + HittableSphere::isRandomInUnitSphere(pRandState) };
+            currentAttenuation *= 0.5f;
+            currentRay = Ray{ hitSpecs.point, target - hitSpecs.point };
+        }
+        else {
+            const vec3 unitRayDirection{ vec3::normalize(currentRay.direction) };
+            const f32 t{ 0.5f * (unitRayDirection.y + 1.f) };
+            const vec3 heavenColor{ (1.f - t) * white + t * blue };
+            return currentAttenuation * heavenColor;
+        }
     }
 
-    const vec3 unitRayDirection{ vec3::normalize(ray.direction) };
-    const f32 t{ 0.5f * (unitRayDirection.y + 1.f) };
-    return (1.f - t) * white + t * blue;
+    return { 0.f, 0.f, 0.f };
 }
 
 
-RTX_GLOBAL void render(color* pPixels, u32 imageWidth, u32 imageHeight, u32 samples, Camera** pCamera, HittableObject** pWorld, curandState* pRandState) {
+RTX_GLOBAL void render(color* pPixels, u32 imageWidth, u32 imageHeight, u32 samples, i32 recursionDepth,
+                       Camera** pCamera, HittableObject** pWorld, curandState* pRandState) {
     const u32 i{ threadIdx.x + blockIdx.x * blockDim.x };
     const u32 j{ threadIdx.y + blockIdx.y * blockDim.y };
     if ((i >= imageWidth) || (j >= imageHeight)) { return; }
@@ -44,14 +56,17 @@ RTX_GLOBAL void render(color* pPixels, u32 imageWidth, u32 imageHeight, u32 samp
 
     curandState localRandState = pRandState[index];
     vec3 localPixel{ 0.f, 0.f, 0.f };
+
     for (u32 s = 0; s < samples; s++) {
         const f32 u{ ((f32)i + curand_uniform(&localRandState)) / (f32)imageWidth };
         const f32 v{ ((f32)j + curand_uniform(&localRandState)) / (f32)imageHeight };
         const Ray ray{ (*pCamera)->origin(), (*pCamera)->calculateRayDirection(u, v) };
-        localPixel = localPixel + colorRay(ray, pWorld);
+        localPixel = localPixel + colorRay(ray, pWorld, &localRandState, recursionDepth);
     }
-
-    pPixels[index] = (localPixel / (f32)samples) * 255.99f;
+    pRandState[index] = localRandState;
+    localPixel = localPixel / (f32)samples;
+    localPixel = vec3::square(localPixel);
+    pPixels[index] = localPixel * 255.99f;
 }
 
 
@@ -130,11 +145,18 @@ auto main() -> i32 {
         renderInit<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getWidth(), image.getHeight(), pRandState)
     );
 
-    Timer<TimerType::MICROSECONDS> timer;
+    Timer<TimerType::MILISECONDS> timer;
     timer.start();
 
     RTX_CALL_KERNEL_AND_VALIDATE(
-        render<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getPixels(), image.getWidth(), image.getHeight(), image.getSamples(), pCamera, pWorld, pRandState)
+        render<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getPixels(),
+                                                            image.getWidth(),
+                                                            image.getHeight(),
+                                                            image.getSamples(),
+                                                            image.getDepth(),
+                                                            pCamera,
+                                                            pWorld,
+                                                            pRandState)
     );
 
     timer.stop();

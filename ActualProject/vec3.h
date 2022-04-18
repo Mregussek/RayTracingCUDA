@@ -20,8 +20,8 @@ struct vec3 {
     RTX_DEVICE inline static vec3 square(vec3 v);
     RTX_DEVICE inline static vec3 cross(vec3 u, vec3 v);
     RTX_DEVICE inline static vec3 normalize(vec3 v);
-    RTX_DEVICE inline static vec3 random(u32 seed);
-    RTX_DEVICE inline static vec3 random(u32 seed, f32 min, f32 max);
+    RTX_DEVICE inline static vec3 random(curandState* pRandState);
+    RTX_DEVICE inline static vec3 random(curandState* pRandState, f32 min, f32 max);
     RTX_DEVICE inline static b8 nearZero(vec3 v);
     RTX_DEVICE inline static vec3 reflect(vec3 vector, vec3 normal);
 
@@ -133,12 +133,12 @@ RTX_DEVICE inline vec3 vec3::normalize(vec3 v) {
     return v / v.length();
 }
 
-RTX_DEVICE inline vec3 vec3::random(u32 seed) {
-    return { generateRandom(seed), generateRandom(seed), generateRandom(seed) };
+RTX_DEVICE inline vec3 vec3::random(curandState* pRandState) {
+    return { generateRandom(pRandState), generateRandom(pRandState), generateRandom(pRandState) };
 }
 
-RTX_DEVICE inline vec3 vec3::random(u32 seed, f32 min, f32 max) {
-    return { generateRandomInRange(seed, min, max), generateRandomInRange(seed, min, max), generateRandomInRange(seed, min, max) };
+RTX_DEVICE inline vec3 vec3::random(curandState* pRandState, f32 min, f32 max) {
+    return { generateRandomInRange(pRandState, min, max), generateRandomInRange(pRandState, min, max), generateRandomInRange(pRandState, min, max) };
 }
 
 RTX_DEVICE inline b8 vec3::nearZero(vec3 v) {

@@ -24,20 +24,17 @@ void check_cuda(cudaError_t result, char const* const func, const char* const fi
 												CUDA_CHECK( cudaDeviceSynchronize() )
 
 
-RTX_DEVICE f32 generateRandom(u32 seed) {
-	curandState_t state;
-	curand_init(seed, 0, 0, &state);
-	const f32 randomNumber = curand(&state) % 100;
-	return randomNumber;
+RTX_DEVICE f32 generateRandom(curandState* pRandState) {
+	return curand_uniform(pRandState);
 }
 
 
-RTX_DEVICE f32 generateRandomInRange(u32 seed, f32 min, f32 max) {
-	return min + (max - min) * generateRandom(seed);
+RTX_DEVICE f32 generateRandomInRange(curandState* pRandState, f32 min, f32 max) {
+	return (max - min) * generateRandom(pRandState) - min;
 }
 
 
-RTX_DEVICE f32 returnZero(u32 seed) {
+RTX_DEVICE f32 returnZero(curandState* pRandState) {
 	return 0.f;
 }
 
