@@ -34,11 +34,12 @@ public:
         CUDA_CHECK(cudaFree(pPixels));
     }
 
-    RTX_HOST RTX_DEVICE f32 getAspectRatio() const { return aspectRatio; }
-    RTX_HOST RTX_DEVICE u32 getWidth() const { return imageSpecs.width; }
-    RTX_HOST RTX_DEVICE u32 getHeight() const { return imageSpecs.height; }
+    f32 getAspectRatio() const { return aspectRatio; }
+    u32 getWidth() const { return imageSpecs.width; }
+    u32 getHeight() const { return imageSpecs.height; }
     u32 getSizeof() const { return imageSizeof; }
     u32 getCount() const { return countPixels; }
+    i32 getSamples() const { return imageSpecs.samplesPerPixel; }
     color* getPixels() { return pPixels; }
 
 private:
