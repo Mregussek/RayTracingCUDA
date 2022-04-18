@@ -27,14 +27,20 @@ RTX_DEVICE vec3 colorRay(const Ray& ray, HittableObject** pWorld, curandState* p
     const color blue{ 0.5f, 0.7f, 1.f };
 
     Ray currentRay{ ray };
-    f32 currentAttenuation{ 1.f };
+    vec3 currentAttenuation{ 1.f, 1.f, 1.f };
 
     for (i32 i = 0; i < recursionDepth; i++) {
         HitSpecification hitSpecs;
         if ((*pWorld)->hit(currentRay, { 0.001f, FLT_MAX }, &hitSpecs)) {
-            const vec3 target{ hitSpecs.point + hitSpecs.normal + HittableSphere::isRandomInUnitSphere(pRandState) };
-            currentAttenuation *= 0.5f;
-            currentRay = Ray{ hitSpecs.point, target - hitSpecs.point };
+            Ray scatteredRay;
+            vec3 attenuation;
+            if (hitSpecs.pMaterial->scatter(currentRay, hitSpecs, &attenuation, &scatteredRay, pRandState)) {
+                currentAttenuation = currentAttenuation * attenuation;
+                currentRay = scatteredRay;
+            }
+            else {
+                return vec3{};
+            }
         }
         else {
             const vec3 unitRayDirection{ vec3::normalize(currentRay.direction) };

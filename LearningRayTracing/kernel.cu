@@ -89,17 +89,18 @@ __global__ void render(vec3* fb, int max_x, int max_y, int ns, camera** cam, hit
 
 __global__ void create_world(hitable** d_list, hitable** d_world, camera** d_camera) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        d_list[0] = new sphere(vec3(0, 0, -1), 0.5, new lambertian(vec3(0.8, 0.3, 0.3)));        // center
-        d_list[1] = new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8, 0.8, 0.0)));   // floor
-        d_list[2] = new sphere(vec3(1, 0, -1), 0.5, new metal(vec3(0.8, 0.6, 0.2), 1.0));        // most right
-        d_list[3] = new sphere(vec3(-1, 0, -1), 0.5, new metal(vec3(0.8, 0.8, 0.8), 0.3));       // most left
-        *d_world = new hitable_list(d_list, 4);
+        *(d_list + 0) = new sphere{ vec3{  0.0f,    0.0f,  -1.f},  0.5f, new metal{      vec3{ 0.8f, 0.8f, 0.8f }, 0.f} };
+        *(d_list + 1) = new sphere{ vec3{  1.5f,    0.0f,  -1.f},  0.5f, new lambertian{ vec3{ 0.7f, 0.3f, 0.3f } } };
+        *(d_list + 2) = new sphere{ vec3{ -1.5f,    0.0f,  -2.f},  0.5f, new lambertian{ vec3{ 0.2f, 0.3f, 0.7f } } };
+        *(d_list + 3) = new sphere{ vec3{ -1.0f,   -0.2f,  -1.f},  0.3f, new metal{      vec3{ 0.8f, 0.6f, 0.2f }, 0.f} };
+        *(d_list + 4) = new sphere{ vec3{  0.0f, -100.5f,  -1.f}, 100.f, new lambertian{ vec3{ 0.8f, 0.8f, 0.f  } } };
+        *d_world = new hitable_list(d_list, 5);
         *d_camera = new camera();
     }
 }
 
 __global__ void free_world(hitable** d_list, hitable** d_world, camera** d_camera) {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         delete ((sphere*)d_list[i])->mat_ptr;
         delete d_list[i];
     }
@@ -108,8 +109,8 @@ __global__ void free_world(hitable** d_list, hitable** d_world, camera** d_camer
 }
 
 int main() {
-    int nx = 640;
-    int ny = 480;
+    int nx = 720;
+    int ny = 405;
     int ns = 20;
     int tx = 8;
     int ty = 8;
@@ -130,7 +131,7 @@ int main() {
 
     // make our world of hitables & the camera
     hitable** d_list;
-    checkCudaErrors(cudaMalloc((void**)&d_list, 4 * sizeof(hitable*)));
+    checkCudaErrors(cudaMalloc((void**)&d_list, 5 * sizeof(hitable*)));
     hitable** d_world;
     checkCudaErrors(cudaMalloc((void**)&d_world, sizeof(hitable*)));
     camera** d_camera;
