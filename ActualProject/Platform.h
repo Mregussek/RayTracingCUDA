@@ -19,6 +19,11 @@ void check_cuda(cudaError_t result, char const* const func, const char* const fi
 }
 
 
+#define RTX_CALL_KERNEL_AND_VALIDATE(...)		__VA_ARGS__;\
+												CUDA_CHECK( cudaGetLastError() );\
+												CUDA_CHECK( cudaDeviceSynchronize() )
+
+
 RTX_DEVICE f32 generateRandom(u32 seed) {
 	curandState_t state;
 	curand_init(seed, 0, 0, &state);

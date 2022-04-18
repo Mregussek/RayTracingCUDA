@@ -125,42 +125,31 @@ auto main() -> i32 {
     HittableObject** pList;
     CUDA_CHECK( cudaMalloc((void**)&pList, 2 * sizeof(HittableObject*)) );
     HittableObject** pWorld;
-    CUDA_CHECK( cudaMalloc((void**)&pWorld, sizeof(HittableObject*)) );
-
-    worldCreate<<<1, 1>>>(pList, pWorld);
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
-
+    CUDA_CHECK( cudaMalloc((void**)&pWorld, 1 * sizeof(HittableObject*)) );
     Camera** pCamera;
     CUDA_CHECK( cudaMalloc((void**)&pCamera, sizeof(Camera*)) );
 
-    renderInit<<<1, 1>>>(pCamera, image.getWidth(), image.getHeight(), image.getAspectRatio());
-    CUDA_CHECK( cudaGetLastError() );
-    CUDA_CHECK( cudaDeviceSynchronize() );
+    RTX_CALL_KERNEL_AND_VALIDATE( worldCreate<<<1, 1>>>(pList, pWorld) );
+    RTX_CALL_KERNEL_AND_VALIDATE( renderInit<<<1, 1>>> (pCamera, image.getWidth(), image.getHeight(), image.getAspectRatio()) );
 
     Timer<TimerType::MICROSECONDS> timer;
     timer.start();
 
-    render<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getPixels(),
-                                                        image.getWidth(),
-                                                        image.getHeight(),
-                                                        pCamera,
-                                                        pWorld);
-    CUDA_CHECK( cudaGetLastError() );
-    CUDA_CHECK( cudaDeviceSynchronize() );
-    
+    RTX_CALL_KERNEL_AND_VALIDATE(
+        render<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getPixels(), image.getWidth(), image.getHeight(), pCamera, pWorld)
+    );
+
     timer.stop();
 
-    writeImageToFile("output_image.ppm", &image);
+    RTX_CALL_KERNEL_AND_VALIDATE( renderClose<<<1, 1>>>(pCamera) );
+    RTX_CALL_KERNEL_AND_VALIDATE( worldFree<<<1, 1>>>(pList, pWorld) );
 
-    image.free();
-
-    renderClose<<<1, 1>>>(pCamera);
     CUDA_CHECK( cudaFree(pCamera) );
-
-    worldFree<<<1, 1>>>(pList, pWorld);
     CUDA_CHECK( cudaFree(pList) );
     CUDA_CHECK( cudaFree(pWorld) );
+
+    writeImageToFile("output_image.ppm", &image);
+    image.free();
 
     return 0;
 }
