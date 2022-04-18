@@ -10,12 +10,13 @@
 
 
 struct Ray;
+struct Material;
 
 
 class HittableSphere : public HittableObject {
 public:
 
-	RTX_DEVICE HittableSphere(point3 _center, f32 _radius);
+	RTX_DEVICE HittableSphere(point3 _center, f32 _radius, Material* _pMaterial);
 
 	RTX_DEVICE b8 hit(const Ray& ray, HitInterval interval, HitSpecification* hitSpecs) const override;
 
@@ -26,14 +27,16 @@ public:
 private:
 
 	point3 center{ 0.f, 0.f, 0.f };
+	Material* pMaterial{ nullptr };
 	f32 radius{ 0.f };
 
 };
 
 
-RTX_DEVICE HittableSphere::HittableSphere(point3 _center, f32 _radius) :
+RTX_DEVICE HittableSphere::HittableSphere(point3 _center, f32 _radius, Material* _pMaterial) :
 	center(_center),
-	radius(_radius)
+	radius(_radius),
+	pMaterial(_pMaterial)
 { }
 
 RTX_DEVICE b8 HittableSphere::hit(const Ray& ray, HitInterval interval, HitSpecification* hitSpecs) const {
@@ -68,6 +71,12 @@ RTX_DEVICE b8 HittableSphere::hit(const Ray& ray, HitInterval interval, HitSpeci
 	hitSpecs->point = hitPoint;
 	hitSpecs->frontFace = vector3::dot(ray.direction, outwardNormal) < 0 ? RTX_TRUE : RTX_FALSE;
 	hitSpecs->normal = hitSpecs->frontFace ? outwardNormal : (-1.f * outwardNormal);
+	hitSpecs->pMaterial = pMaterial;
+	return RTX_TRUE;
+}
+
+RTX_DEVICE b8 HittableSphere::deleteMaterial() {
+	delete pMaterial;
 	return RTX_TRUE;
 }
 

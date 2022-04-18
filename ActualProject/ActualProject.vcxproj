@@ -89,6 +89,7 @@
     <ClInclude Include="HittableObject.h" />
     <ClInclude Include="HittableSphere.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Timer.h" />

@@ -10,6 +10,7 @@
 #include "HittableList.h"
 #include "HittableObject.h"
 #include "HittableSphere.h"
+#include "Material.h"
 
 
 RTX_GLOBAL void renderInit(u32 imageWidth, u32 imageHeight, curandState* pRandState) {
@@ -79,9 +80,12 @@ RTX_GLOBAL void renderClose(Camera** pCamera) {
 
 RTX_GLOBAL void worldCreate(HittableObject** pList, HittableObject** pWorld, Camera** pCamera, f32 aspectRatio) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        *(pList + 0) = new HittableSphere({ 0.f, 0.f, -1.f }, 0.5f);
-        *(pList + 1) = new HittableSphere({ 0.f, -100.5f, -1.f }, 100.f);
-        *pWorld = new HittableList(pList, 2);
+        *(pList + 0) = new HittableSphere{ point3{  0.0f,    0.0f,  -1.f}, radius{  0.5f }, new Metal{      color{ 0.8f, 0.8f, 0.8f } } };
+        *(pList + 1) = new HittableSphere{ point3{  1.5f,    0.0f,  -1.f}, radius{  0.5f }, new Lambertian{ color{ 0.7f, 0.3f, 0.3f } } };
+        *(pList + 2) = new HittableSphere{ point3{ -1.5f,    0.0f,  -2.f}, radius{  0.5f }, new Lambertian{ color{ 0.2f, 0.3f, 0.7f } } };
+        *(pList + 3) = new HittableSphere{ point3{ -1.0f,   -0.2f,  -1.f}, radius{  0.3f }, new Metal{      color{ 0.8f, 0.6f, 0.2f } } };
+        *(pList + 4) = new HittableSphere{ point3{  0.0f, -100.5f,  -1.f}, radius{ 100.f }, new Lambertian{ color{ 0.8f, 0.8f, 0.f  } } };
+        *pWorld = new HittableList(pList, 5);
 
         CameraSpecification camSpecs;
         camSpecs.height = 2.f;
@@ -95,18 +99,21 @@ RTX_GLOBAL void worldCreate(HittableObject** pList, HittableObject** pWorld, Cam
 }
 
 
-RTX_GLOBAL void worldFree(HittableObject** pList, HittableObject** pWorld) {
+RTX_GLOBAL void worldFree(HittableObject** pList, HittableObject** pWorld, u32 listCount) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        delete *(pList + 0);
-        delete *(pList + 1);
+        for (u32 i = 0; i < listCount; i++) {
+            (*(pList + i))->deleteMaterial();
+            delete *(pList + i);
+        }
         delete *pWorld;
     }
 }
 
 
 void printCrucialInfoAboutRendering(Image* pImage, Blocks* pBlocks) {
-    std::cerr << "Rendering a " << pImage->getWidth() << "x" << pImage->getHeight() << " image ";
-    std::cerr << "in " << pBlocks->getWidth() << "x" << pBlocks->getHeight() << " blocks.\n";
+    std::cerr << "Rendering a " << pImage->getWidth() << "x" << pImage->getHeight() << " image "
+              << "with " << pImage->getSamples() << " samples per pixel in " << pBlocks->getWidth() << "x"
+              << pBlocks->getHeight() << " blocks.\n";
 }
 
 
@@ -115,8 +122,8 @@ auto main() -> i32 {
     ImageSpecification imageSpecs{};
     imageSpecs.width = 720;
     imageSpecs.height = 405;
-    imageSpecs.samplesPerPixel = 100;
-    imageSpecs.recursionDepth = 100;
+    imageSpecs.samplesPerPixel = 20;
+    imageSpecs.recursionDepth = 50;
     
     Image image{};
     image.initialize(imageSpecs);
@@ -133,8 +140,9 @@ auto main() -> i32 {
     curandState* pRandState;
     CUDA_CHECK( cudaMalloc((void**)&pRandState, image.getCount() * sizeof(curandState)));
 
+    u32 listCount{ 5 };
     HittableObject** pList;
-    CUDA_CHECK( cudaMalloc((void**)&pList, 2 * sizeof(HittableObject*)) );
+    CUDA_CHECK( cudaMalloc((void**)&pList, listCount * sizeof(HittableObject*)) );
     HittableObject** pWorld;
     CUDA_CHECK( cudaMalloc((void**)&pWorld, 1 * sizeof(HittableObject*)) );
     Camera** pCamera;
@@ -162,7 +170,7 @@ auto main() -> i32 {
     timer.stop();
 
     RTX_CALL_KERNEL_AND_VALIDATE( renderClose<<<1, 1>>>(pCamera) );
-    RTX_CALL_KERNEL_AND_VALIDATE( worldFree<<<1, 1>>>(pList, pWorld) );
+    RTX_CALL_KERNEL_AND_VALIDATE( worldFree<<<1, 1>>>(pList, pWorld, listCount) );
 
     CUDA_CHECK( cudaFree(pRandState) );
     CUDA_CHECK( cudaFree(pCamera) );
