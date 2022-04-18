@@ -9,6 +9,8 @@
 #if USE_GPU_CUDA_COMPUTING
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include <curand.h>
+#include <curand_kernel.h>
 #define RTX_HOST __host__
 #define RTX_DEVICE __device__
 #define RTX_GLOBAL __global__
@@ -30,6 +32,8 @@
 #include <chrono>
 #include <cstdint>
 #include <cmath>
+#include <initializer_list>
+#include <vector>
 
 
 using i8 = int_fast8_t;
@@ -49,8 +53,6 @@ using b8 = i8;
 using b32 = i32;
 
 using radius = f32;
-
-static const f32 infinity{ std::numeric_limits<f32>::infinity() };
 
 
 #endif

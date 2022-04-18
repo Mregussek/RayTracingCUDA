@@ -19,26 +19,26 @@ void check_cuda(cudaError_t result, char const* const func, const char* const fi
 }
 
 
-f32 generateRandom() {
-	static std::uniform_real_distribution<f32> distribution(0.0f, 1.0f);
-	static std::mt19937 generator;
-	return distribution(generator);
+RTX_DEVICE f32 generateRandom(u32 seed) {
+	curandState_t state;
+	curand_init(seed, 0, 0, &state);
+	const f32 randomNumber = curand(&state) % 100;
+	return randomNumber;
 }
 
 
-f32 generateRandomInRange(f32 min, f32 max) {
-	return min + (max - min) * generateRandom();
+RTX_DEVICE f32 generateRandomInRange(u32 seed, f32 min, f32 max) {
+	return min + (max - min) * generateRandom(seed);
 }
 
 
-f32 returnZero() {
+RTX_DEVICE f32 returnZero(u32 seed) {
 	return 0.f;
 }
 
 
-b8 epsilonEqual(f32 x) {
-	constexpr f32 epsilon{ (f32)RTX_EPS };
-	return fabs(x) < epsilon ? RTX_TRUE : RTX_FALSE;
+RTX_DEVICE b8 epsilonEqual(f32 x) {
+	return fabs(x) < (f32)RTX_EPS ? RTX_TRUE : RTX_FALSE;
 }
 
 

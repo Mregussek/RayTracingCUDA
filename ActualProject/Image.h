@@ -44,7 +44,7 @@ public:
 private:
 
     ImageSpecification imageSpecs;
-    f32(*multisampleFunc)() { nullptr };
+    f32(*multisampleFunc)(u32) { nullptr };
     color* pPixels;
     f32 aspectRatio{ 0.f };
     u32 countPixels{ 0 };

@@ -85,6 +85,9 @@
     <ClInclude Include="Blocks.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="HittableList.h" />
+    <ClInclude Include="HittableObject.h" />
+    <ClInclude Include="HittableSphere.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="Ray.h" />
