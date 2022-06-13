@@ -11,6 +11,7 @@
 #include "HittableObject.h"
 #include "HittableSphere.h"
 #include "Material.h"
+#include "Filesystem.h"
 
 
 RTX_GLOBAL void renderInit(u32 imageWidth, u32 imageHeight, curandState* pRandState) {
@@ -108,7 +109,6 @@ RTX_GLOBAL void renderClose(Camera** pCamera) {
 }
 
 
-
 RTX_GLOBAL void worldCreate(HittableObject** pList, HittableObject** pWorld, Camera** pCamera, f32 aspectRatio, u32 listCount) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         *(pList + 0) = new HittableSphere{ point3{  0.0f,    0.0f,  -1.f}, radius{  0.5f }, new Metal{      color{ 0.8f, 0.8f, 0.8f } } };
@@ -149,6 +149,11 @@ void printCrucialInfoAboutRendering(Image* pImage, Blocks* pBlocks) {
 
 
 auto main() -> i32 {
+    FilesystemSpecification filesystemSpecs;
+    Filesystem filesystem;
+    filesystem.load("resources/default.json", &filesystemSpecs);
+
+    return;
 
     ImageSpecification imageSpecs{};
     imageSpecs.width = 720;

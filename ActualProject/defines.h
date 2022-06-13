@@ -34,6 +34,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 
 using i8 = int_fast8_t;

@@ -57,6 +57,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>$(SolutionDir)ActualProject\3rdparty\json\single_include;%(Include)</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -82,9 +83,11 @@
     <CudaCompile Include="main.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="3rdparty\json\single_include\nlohmann\json.hpp" />
     <ClInclude Include="Blocks.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="Filesystem.h" />
     <ClInclude Include="HittableList.h" />
     <ClInclude Include="HittableObject.h" />
     <ClInclude Include="HittableSphere.h" />
