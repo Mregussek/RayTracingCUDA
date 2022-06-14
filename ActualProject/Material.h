@@ -15,15 +15,19 @@ public:
 	RTX_DEVICE virtual b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation,
 								  Ray* pScattered, curandState* pRandState) const { return RTX_FALSE; }
 
+	RTX_DEVICE virtual void setAlbedo(f32 r, f32 g, f32 b) {
+		albedo = { r, g, b };
+	}
+
+protected:
+
+	color albedo{ 0.f, 0.f, 0.f };
+
 };
 
 
 class Lambertian : public Material {
 public:
-
-	RTX_DEVICE Lambertian(color _albedo) :
-		albedo(_albedo)
-	{ }
 
 	RTX_DEVICE b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation, Ray* pScattered,
 						  curandState* pRandState) const override {
@@ -33,19 +37,11 @@ public:
 		return RTX_TRUE;
 	}
 
-private:
-
-	color albedo{ 0.f, 0.f, 0.f };
-
 };
 
 
 class Metal : public Material {
 public:
-
-	RTX_DEVICE Metal(color _albedo) :
-		albedo(_albedo)
-	{ }
 
 	RTX_DEVICE b8 scatter(const Ray& ray, const HitSpecification& hitSpecs, color* pAttenuation, Ray* pScattered,
 						  curandState* pRandState) const override {
@@ -54,10 +50,6 @@ public:
 		*pAttenuation = albedo;
 		return (vector3::dot(pScattered->direction, hitSpecs.normal) > 0) ? RTX_TRUE : RTX_FALSE;
 	}
-
-private:
-
-	color albedo{ 0.f, 0.f, 0.f };
 
 };
 

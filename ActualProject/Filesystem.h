@@ -6,18 +6,13 @@
 #include "defines.h"
 
 
-enum class MaterialType {
-	METAL = 0, LAMBERTIAN = 1
-};
-
-
 struct FilesystemSpecification {
 
 	std::vector<f32> positions; // iterates over 3 items for x y z values
 	std::vector<f32> colors; // the same as positions
 
 	std::vector<f32> radius; // iterates over 1 item, 1 radius per 1 sphere
-	std::vector<MaterialType> materials; // 1 material over 1 item
+	std::vector<i32> materials; // 1 material over 1 item
 
 };
 
@@ -38,7 +33,7 @@ void displayFilesystemSpecsItem(u32 index, FilesystemSpecification* pSpecs) {
 	std::cout << "\n\nPosition: " << pSpecs->positions[index * 3 + 0] << ' ' << pSpecs->positions[index * 3 + 1] << ' ' << pSpecs->positions[index * 3 + 2]
 		      << "\nColor: " << pSpecs->colors[index * 3 + 0] << ' ' << pSpecs->colors[index * 3 + 1] << ' ' << pSpecs->colors[index * 3 + 2]
 			  << "\nMaterial: " << (i32)pSpecs->materials[index]
-			  << "\nRadius: " << pSpecs->radius[index];
+			  << "\nRadius: " << pSpecs->radius[index] << '\n\n';
 }
 
 
@@ -69,7 +64,7 @@ public:
 			pSpecs->colors.push_back(jsonFile[jObjects][i][jColor]["y"].get<f32>());
 			pSpecs->colors.push_back(jsonFile[jObjects][i][jColor]["z"].get<f32>());
 
-			pSpecs->materials.push_back((MaterialType)jsonFile[jObjects][i][jMaterial].get<i32>());
+			pSpecs->materials.push_back(jsonFile[jObjects][i][jMaterial].get<i32>());
 
 			pSpecs->radius.push_back(jsonFile[jObjects][i][jRadius].get<f32>());
 

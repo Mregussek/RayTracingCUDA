@@ -109,13 +109,19 @@ RTX_GLOBAL void renderClose(Camera** pCamera) {
 }
 
 
-RTX_GLOBAL void worldCreate(HittableObject** pList, HittableObject** pWorld, Camera** pCamera, f32 aspectRatio, u32 listCount) {
+RTX_GLOBAL void worldCreate(HittableObject** pList, HittableObject** pWorld, Camera** pCamera,
+                            f32 aspectRatio, u32 listCount,
+                            f32* positions, f32* colors, i32* materials, f32* radius) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        *(pList + 0) = new HittableSphere{ point3{  0.0f,    0.0f,  -1.f}, radius{  0.5f }, new Metal{      color{ 0.8f, 0.8f, 0.8f } } };
-        *(pList + 1) = new HittableSphere{ point3{  1.5f,    0.0f,  -1.f}, radius{  0.5f }, new Lambertian{ color{ 0.7f, 0.3f, 0.3f } } };
-        *(pList + 2) = new HittableSphere{ point3{ -1.5f,    0.0f,  -2.f}, radius{  0.5f }, new Lambertian{ color{ 0.2f, 0.3f, 0.7f } } };
-        *(pList + 3) = new HittableSphere{ point3{ -1.0f,   -0.2f,  -1.f}, radius{  0.3f }, new Metal{      color{ 0.8f, 0.6f, 0.2f } } };
-        *(pList + 4) = new HittableSphere{ point3{  0.0f, -100.5f,  -1.f}, radius{ 100.f }, new Lambertian{ color{ 0.8f, 0.8f, 0.f  } } };
+        for (u32 i = 0; i < listCount; i++) {
+            Material* pMaterial = materials[i] == 0 ? (Material*)new Metal{} : (Material*)new Lambertian{};
+            pMaterial->setAlbedo(colors[i * 3 + 0], colors[i * 3 + 1], colors[i * 3 + 2]);
+            *(pList + i) = new HittableSphere{
+                point3{ positions[i * 3 + 0], positions[i * 3 + 1], positions[i * 3 + 2] },
+                f32{ radius[i] },
+                pMaterial
+            };
+        }
         *pWorld = new HittableList(pList, listCount);
 
         CameraSpecification camSpecs;
@@ -151,9 +157,7 @@ void printCrucialInfoAboutRendering(Image* pImage, Blocks* pBlocks) {
 auto main() -> i32 {
     FilesystemSpecification filesystemSpecs;
     Filesystem filesystem;
-    filesystem.load("resources/default.json", &filesystemSpecs);
-
-    return;
+    filesystem.load("resources/second.json", &filesystemSpecs);
 
     ImageSpecification imageSpecs{};
     imageSpecs.width = 720;
@@ -176,16 +180,35 @@ auto main() -> i32 {
     curandState* pRandState;
     CUDA_CHECK( cudaMalloc((void**)&pRandState, image.getCount() * sizeof(curandState)));
 
-    const u32 listCount{ 5 };
+    u32 itemsCount{ (u32)filesystemSpecs.materials.size() };
     HittableObject** pList;
-    CUDA_CHECK( cudaMalloc((void**)&pList, listCount * sizeof(HittableObject*)) );
+    CUDA_CHECK( cudaMalloc((void**)&pList, itemsCount * sizeof(HittableObject*)) );
     HittableObject** pWorld;
     CUDA_CHECK( cudaMalloc((void**)&pWorld, 1 * sizeof(HittableObject*)) );
     Camera** pCamera;
     CUDA_CHECK( cudaMalloc((void**)&pCamera, sizeof(Camera*)) );
 
-    RTX_CALL_KERNEL_AND_VALIDATE( worldCreate<<<1, 1>>>(pList, pWorld, pCamera, image.getAspectRatio(), listCount) );
-    RTX_CALL_KERNEL_AND_VALIDATE( 
+    f32* positionsGPU;
+    cudaMalloc(&positionsGPU, filesystemSpecs.positions.size() * sizeof(decltype(filesystemSpecs.positions[0])));
+    cudaMemcpy(positionsGPU, filesystemSpecs.positions.data(), filesystemSpecs.positions.size() * sizeof(decltype(filesystemSpecs.positions[0])), cudaMemcpyHostToDevice);
+
+    f32* colorsGPU;
+    cudaMalloc(&colorsGPU, filesystemSpecs.colors.size() * sizeof(decltype(filesystemSpecs.colors[0])));
+    cudaMemcpy(colorsGPU, filesystemSpecs.colors.data(), filesystemSpecs.colors.size() * sizeof(decltype(filesystemSpecs.colors[0])), cudaMemcpyHostToDevice);
+
+    i32* materialsGPU;
+    cudaMalloc(&materialsGPU, filesystemSpecs.materials.size() * sizeof(decltype(filesystemSpecs.materials[0])));
+    cudaMemcpy(materialsGPU, filesystemSpecs.materials.data(), filesystemSpecs.materials.size() * sizeof(decltype(filesystemSpecs.materials[0])), cudaMemcpyHostToDevice);
+
+    f32* radiusGPU;
+    cudaMalloc(&radiusGPU, filesystemSpecs.radius.size() * sizeof(decltype(filesystemSpecs.radius[0])));
+    cudaMemcpy(radiusGPU, filesystemSpecs.radius.data(), filesystemSpecs.radius.size() * sizeof(decltype(filesystemSpecs.radius[0])), cudaMemcpyHostToDevice);
+
+    RTX_CALL_KERNEL_AND_VALIDATE(
+        worldCreate<<<1, 1>>>(pList, pWorld, pCamera, image.getAspectRatio(), itemsCount,
+                              positionsGPU, colorsGPU,
+                              materialsGPU, radiusGPU) );
+    RTX_CALL_KERNEL_AND_VALIDATE(
         renderInit<<<blocks.getBlocks(), blocks.getThreads()>>>(image.getWidth(), image.getHeight(), pRandState)
     );
 
@@ -206,7 +229,7 @@ auto main() -> i32 {
     timer.stop();
 
     RTX_CALL_KERNEL_AND_VALIDATE( renderClose<<<1, 1>>>(pCamera) );
-    RTX_CALL_KERNEL_AND_VALIDATE( worldFree<<<1, 1>>>(pList, pWorld, listCount) );
+    RTX_CALL_KERNEL_AND_VALIDATE( worldFree<<<1, 1>>>(pList, pWorld, itemsCount) );
 
     CUDA_CHECK( cudaFree(pRandState) );
     CUDA_CHECK( cudaFree(pCamera) );
@@ -215,6 +238,11 @@ auto main() -> i32 {
 
     writeImageToFile("output_image.ppm", &image);
     image.free();
+
+    cudaFree(positionsGPU);
+    cudaFree(colorsGPU);
+    cudaFree(materialsGPU);
+    cudaFree(radiusGPU);
 
     return 0;
 }
