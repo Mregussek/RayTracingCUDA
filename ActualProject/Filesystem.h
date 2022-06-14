@@ -72,6 +72,8 @@ public:
 
 			i++;
 		}
+
+		std::cout << "\n\n";
 	}
 
 };
