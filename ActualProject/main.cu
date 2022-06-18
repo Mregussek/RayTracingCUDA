@@ -2,7 +2,7 @@
 #include "Kernels.h"
 
 
-void printCrucialInfoAboutRendering(Image* pImage, Blocks* pBlocks) {
+static void printCrucialInfoAboutRendering(Image* pImage, Blocks* pBlocks) {
     std::cerr << "Rendering a " << pImage->getWidth() << "x" << pImage->getHeight() << " image "
               << "with " << pImage->getSamples() << " samples per pixel in " << pBlocks->getWidth() << "x"
               << pBlocks->getHeight() << " blocks.\n";
@@ -12,7 +12,7 @@ void printCrucialInfoAboutRendering(Image* pImage, Blocks* pBlocks) {
 auto main() -> i32 {
     FilesystemSpecification filesystemSpecs;
     Filesystem filesystem;
-    filesystem.load("resources/second.json", &filesystemSpecs);
+    filesystem.load("resources/third.json", &filesystemSpecs);
 
     ImageSpecification imageSpecs{};
     imageSpecs.width = 1920;
@@ -44,20 +44,13 @@ auto main() -> i32 {
     CUDA_CHECK( cudaMalloc((void**)&pCamera, sizeof(Camera*)) );
 
     f32* positionsGPU;
-    cudaMalloc(&positionsGPU, filesystemSpecs.positions.size() * sizeof(decltype(filesystemSpecs.positions[0])));
-    cudaMemcpy(positionsGPU, filesystemSpecs.positions.data(), filesystemSpecs.positions.size() * sizeof(decltype(filesystemSpecs.positions[0])), cudaMemcpyHostToDevice);
-
+    CUDA_MALLOC_AND_MEMCPY(positionsGPU, filesystemSpecs.positions);
     f32* colorsGPU;
-    cudaMalloc(&colorsGPU, filesystemSpecs.colors.size() * sizeof(decltype(filesystemSpecs.colors[0])));
-    cudaMemcpy(colorsGPU, filesystemSpecs.colors.data(), filesystemSpecs.colors.size() * sizeof(decltype(filesystemSpecs.colors[0])), cudaMemcpyHostToDevice);
-
+    CUDA_MALLOC_AND_MEMCPY(colorsGPU, filesystemSpecs.colors);
     i32* materialsGPU;
-    cudaMalloc(&materialsGPU, filesystemSpecs.materials.size() * sizeof(decltype(filesystemSpecs.materials[0])));
-    cudaMemcpy(materialsGPU, filesystemSpecs.materials.data(), filesystemSpecs.materials.size() * sizeof(decltype(filesystemSpecs.materials[0])), cudaMemcpyHostToDevice);
-
+    CUDA_MALLOC_AND_MEMCPY(materialsGPU, filesystemSpecs.materials);
     f32* radiusGPU;
-    cudaMalloc(&radiusGPU, filesystemSpecs.radius.size() * sizeof(decltype(filesystemSpecs.radius[0])));
-    cudaMemcpy(radiusGPU, filesystemSpecs.radius.data(), filesystemSpecs.radius.size() * sizeof(decltype(filesystemSpecs.radius[0])), cudaMemcpyHostToDevice);
+    CUDA_MALLOC_AND_MEMCPY(radiusGPU, filesystemSpecs.radius);
 
     RTX_CALL_KERNEL_AND_VALIDATE(
         worldCreate<<<1, 1>>>(pList, pWorld, pCamera, image.getAspectRatio(), itemsCount,

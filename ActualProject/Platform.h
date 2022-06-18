@@ -24,6 +24,11 @@ void check_cuda(cudaError_t result, char const* const func, const char* const fi
 												CUDA_CHECK( cudaDeviceSynchronize() )
 
 
+#define CUDA_MALLOC_AND_MEMCPY(pDeviceData, hostData) \
+    cudaMalloc(&pDeviceData, hostData.size() * sizeof(decltype(hostData[0])));\
+    cudaMemcpy(pDeviceData, hostData.data(), hostData.size() * sizeof(decltype(hostData[0])), cudaMemcpyHostToDevice)
+
+
 RTX_DEVICE f32 generateRandom(curandState* pRandState) {
 	return curand_uniform(pRandState);
 }
