@@ -21,17 +21,8 @@ struct ImageSpecification {
 class Image {
 public:
 
-    void initialize(ImageSpecification _imageSpecs) {
-        imageSpecs = _imageSpecs;
-        aspectRatio = (f32)imageSpecs.width / (f32)imageSpecs.height;
-        countPixels = imageSpecs.width * imageSpecs.height;
-        imageSizeof = countPixels * sizeof(color);
-        CUDA_CHECK( cudaMallocManaged((void**)&pPixels, imageSizeof) );
-    }
-
-    void free() {
-        CUDA_CHECK(cudaFree(pPixels));
-    }
+    void initialize(ImageSpecification _imageSpecs);
+    void free();
 
     f32 getAspectRatio() const { return aspectRatio; }
     u32 getWidth() const { return imageSpecs.width; }
@@ -51,6 +42,19 @@ private:
     u32 imageSizeof{ 0 };
 
 };
+
+
+void Image::initialize(ImageSpecification _imageSpecs) {
+    imageSpecs = _imageSpecs;
+    aspectRatio = (f32)imageSpecs.width / (f32)imageSpecs.height;
+    countPixels = imageSpecs.width * imageSpecs.height;
+    imageSizeof = countPixels * sizeof(color);
+    CUDA_CHECK(cudaMallocManaged((void**)&pPixels, imageSizeof));
+}
+
+void Image::free() {
+    CUDA_CHECK(cudaFree(pPixels));
+}
 
 
 static void writePixelToFile(std::ostream& out, vec3 pixel) {
